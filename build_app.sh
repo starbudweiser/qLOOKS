@@ -33,6 +33,17 @@ build_ext() {
 build_ext Preview QuickLookUI Preview/*.swift
 build_ext Thumbnail QuickLookThumbnailing Thumbnail/*.swift
 
+# Décodeur vidéo (MediaExtension, ExtensionKit) : PNG et Animation pour tout macOS. Exige le profil de provisionnement.
+if [ -f Resources/Decoder.provisionprofile ]; then
+  DEC="$APP/Contents/Extensions/Decoder.appex"
+  mkdir -p "$DEC/Contents/MacOS"
+  "${SWIFTC[@]}" -parse-as-library -application-extension -module-name Decoder -framework MediaExtension -framework ExtensionFoundation \
+    -Xlinker -e -Xlinker _EXExtensionMain -o "$DEC/Contents/MacOS/Decoder" Decoder/Decoder.swift Shared/QTRLE.swift
+  cp Resources/Decoder-Info.plist "$DEC/Contents/Info.plist"
+  cp Resources/Decoder.provisionprofile "$DEC/Contents/embedded.provisionprofile"
+  SIGN_ENTITLEMENTS="$PWD/Resources/Decoder.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$DEC"
+fi
+
 SIGN_ENTITLEMENTS="$PWD/Resources/App.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$APP"
 
 if [ -z "${NO_INSTALL:-}" ]; then

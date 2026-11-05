@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key><string>en</string>
+	<key>CFBundleDisplayName</key><string>aLPHALOOK PNG et Animation</string>
+	<key>CFBundleExecutable</key><string>Decoder</string>
+	<key>CFBundleIdentifier</key><string>fr.stephan.alphalook.decoder</string>
+	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+	<key>CFBundleName</key><string>Decoder</string>
+	<key>CFBundlePackageType</key><string>XPC!</string>
+	<key>CFBundleShortVersionString</key><string>1.0.0</string>
+	<key>CFBundleVersion</key><string>1.0.0</string>
+	<key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
+	<key>LSMinimumSystemVersion</key><string>15.0</string>
+	<key>EXAppExtensionAttributes</key>
+	<dict>
+		<key>ClassImplementationID</key><string>fr.stephan.alphalook.videodecoder.pngrle</string>
+		<key>EXExtensionPointIdentifier</key><string>com.apple.mediaextension.videodecoder</string>
+		<key>EXPrincipalClass</key><string>DecoderExtension</string>
+		<key>ObjectName</key><string>aLPHALOOK PNG and Animation decoder</string>
+		<key>CodecInfo</key>
+		<array>
+			<dict><key>CodecType</key><string>png </string><key>CodecName</key><string>PNG</string></dict>
+			<dict><key>CodecType</key><string>rle </string><key>CodecName</key><string>Animation</string></dict>
+		</array>
+	</dict>
+</dict>
+</plist>

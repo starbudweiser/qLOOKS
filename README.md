@@ -8,6 +8,13 @@ aLPHALOOK is a macOS app that hosts two Quick Look extensions (preview and thumb
 Authors: Starbudweiser & Claude Code (Anthropic). MIT License. Provided as is, without warranty. Not affiliated with Apple or Video Copilot.
 See **About aLPHALOOK** in the app menu.
 
+## How it works
+
+- A MediaExtension video decoder (`Decoder.appex`, needs a provisioning profile in `Resources/Decoder.provisionprofile`, not versioned) lets macOS play PNG and Animation `.mov` files, so Quick Look's own player works with the space bar.
+- A Quick Look thumbnail extension draws the most filled frame on a checkerboard.
+- A Quick Look preview extension (checkerboard player) exists, but macOS keeps its built-in movie player for `.mov`.
+- Enable the decoder in System Settings > General > Login Items & Extensions > Media Extensions.
+
 ## Build
 
 ```
