@@ -28,11 +28,13 @@ enum FrameError: LocalizedError {
 enum Sources {
     /// Vrai quand l'aperçu du système ne convient pas : codec qu'il ne lit pas, ou couche alpha à montrer sur un damier.
     static func needsAlphaView(_ url: URL) -> Bool {
+        if MatroskaFile.isMatroska(url) { return true }
         guard let mov = try? MovFile(url: url) else { return false }
         return ["png ", "rle "].contains(mov.codec) || mov.hasAlpha
     }
 
     static func open(_ url: URL) async throws -> FrameSource {
+        if MatroskaFile.isMatroska(url) { return try MKVSource(url: url) }
         if let mov = try? MovFile(url: url) {
             switch mov.codec {
             case "png ": return try PNGSource(url: url, mov: mov)
