@@ -21,6 +21,22 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
+        if let ak = AppInfo.kind(of: url) {
+            Task.detached {
+                let page = AppInfo.html(for: url, kind: ak)
+                await MainActor.run {
+                    guard let page else { handler(FrameError.unreadable); return }
+                    let web = WKWebView(frame: self.view.bounds, configuration: WKWebViewConfiguration())
+                    let nav = WebNav(done: { handler(nil) })
+                    web.navigationDelegate = nav
+                    self.webNav = nav
+                    self.embed(web)
+                    self.preferredContentSize = CGSize(width: 820, height: 700)
+                    web.loadHTMLString(page, baseURL: nil)
+                }
+            }
+            return
+        }
         if let kind = WebDoc.kind(of: url) {
             guard let page = WebDoc.html(for: url, kind: kind) else { handler(FrameError.unreadable); return }
             let web = WKWebView(frame: view.bounds, configuration: WKWebViewConfiguration())
