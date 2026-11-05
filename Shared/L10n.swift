@@ -17,6 +17,8 @@ enum L {
     static let tables: [String: [String: String]] = ["fr": fr, "en": en, "es": es, "it": it]
 
     static let fr: [String: String] = [
+        "tree.files": "%d fichiers", "tree.dirs": "%d dossiers", "tree.partial": "aperçu partiel (archive très volumineuse)",
+        "tree.name": "Nom", "tree.size": "Taille", "tree.empty": "Dossier vide",
         "app.tagline": "Aperçus et vignettes QuickLook des formats que macOS ne gère pas, réunis en un seul endroit.",
         "menu.about": "À propos de qLOOKS", "menu.quit": "Quitter qLOOKS",
         "pv.play": "Lecture / pause", "pv.loop": "Lire en boucle", "pv.background": "Fond derrière la vidéo",
@@ -59,6 +61,8 @@ enum L {
     ]
 
     static let en: [String: String] = [
+        "tree.files": "%d files", "tree.dirs": "%d folders", "tree.partial": "partial preview (very large archive)",
+        "tree.name": "Name", "tree.size": "Size", "tree.empty": "Empty folder",
         "app.tagline": "Quick Look previews and thumbnails for the formats macOS does not handle, in one place.",
         "menu.about": "About qLOOKS", "menu.quit": "Quit qLOOKS",
         "pv.play": "Play / pause", "pv.loop": "Loop", "pv.background": "Background behind the video",
@@ -101,6 +105,8 @@ enum L {
     ]
 
     static let es: [String: String] = [
+        "tree.files": "%d archivos", "tree.dirs": "%d carpetas", "tree.partial": "vista previa parcial (archivo muy grande)",
+        "tree.name": "Nombre", "tree.size": "Tamaño", "tree.empty": "Carpeta vacía",
         "app.tagline": "Vistas previas y miniaturas Quick Look de los formatos que macOS no admite, en un solo lugar.",
         "menu.about": "Acerca de qLOOKS", "menu.quit": "Salir de qLOOKS",
         "pv.play": "Reproducir / pausa", "pv.loop": "Reproducir en bucle", "pv.background": "Fondo detrás del vídeo",
@@ -143,6 +149,8 @@ enum L {
     ]
 
     static let it: [String: String] = [
+        "tree.files": "%d file", "tree.dirs": "%d cartelle", "tree.partial": "anteprima parziale (archivio molto grande)",
+        "tree.name": "Nome", "tree.size": "Dimensione", "tree.empty": "Cartella vuota",
         "app.tagline": "Anteprime e miniature Quick Look dei formati che macOS non gestisce, in un unico posto.",
         "menu.about": "Informazioni su qLOOKS", "menu.quit": "Esci da qLOOKS",
         "pv.play": "Riproduci / pausa", "pv.loop": "Riproduci in loop", "pv.background": "Sfondo dietro il video",

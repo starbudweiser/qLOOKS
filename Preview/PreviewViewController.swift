@@ -19,7 +19,19 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
-        if VectorImage.handles(url) {
+        var isDir: ObjCBool = false
+        let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
+        if (exists && isDir.boolValue) || Archives.kind(of: url) != nil {
+            Task.detached {
+                let listing = try? Archives.listing(for: url)
+                await MainActor.run {
+                    guard let listing else { handler(FrameError.unreadable); return }
+                    self.embed(TreeView(listing: listing, title: url.lastPathComponent))
+                    self.preferredContentSize = CGSize(width: 640, height: 520)
+                    handler(nil)
+                }
+            }
+        } else if VectorImage.handles(url) {
             Task { @MainActor in
                 guard let image = VectorImage.render(url, maxPixel: 2400) else { handler(FrameError.unreadable); return }
                 let canvas = CanvasView()

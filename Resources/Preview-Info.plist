@@ -17,7 +17,7 @@
 	<dict>
 		<key>NSExtensionAttributes</key>
 		<dict>
-			<key>QLSupportedContentTypes</key><array><string>com.apple.quicktime-movie</string><string>org.matroska.mkv</string><string>io.iina.mkv</string><string>public.svg-image</string><string>com.adobe.encapsulated-postscript</string><string>com.adobe.illustrator.ai-image</string></array>
+			<key>QLSupportedContentTypes</key><array><string>com.apple.quicktime-movie</string><string>org.matroska.mkv</string><string>io.iina.mkv</string><string>public.svg-image</string><string>com.adobe.encapsulated-postscript</string><string>com.adobe.illustrator.ai-image</string><string>public.folder</string><string>public.zip-archive</string><string>public.tar-archive</string><string>org.gnu.gnu-zip-archive</string><string>org.gnu.gnu-zip-tar-archive</string></array>
 			<key>QLIsDataBasedPreview</key><false/>
 			<key>QLSupportsSearchableItems</key><false/>
 		</dict>
