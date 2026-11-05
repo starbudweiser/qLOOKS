@@ -35,6 +35,7 @@ struct Listing {
     var dirCount = 0
     var totalSize: Int64 = 0
     var partial = false
+    var note: String?
 }
 
 enum ArchiveError: Error { case unreadable, unsupported }
@@ -47,6 +48,9 @@ enum Archives {
         case "zip", "jar", "apk", "epub", "ipa", "docx", "xlsx", "pptx": return "zip"
         case "tar": return "tar"
         case "gz": return "gz"
+        case "rar": return "rar"
+        case "7z": return "7z"
+        case "dmg": return "dmg"
         default: return nil
         }
     }
@@ -61,6 +65,9 @@ enum Archives {
         case "tar": return try tar(url, gzip: false)
         case "tgz": return try tar(url, gzip: true)
         case "gz": return try gz(url)
+        case "rar": return try rar(url)
+        case "7z": return try sevenZip(url)
+        case "dmg": return try dmg(url)
         default: throw ArchiveError.unsupported
         }
     }
@@ -316,5 +323,327 @@ enum Archives {
         var b = Builder()
         b.add(path: url.deletingPathExtension().lastPathComponent, size: size, isDir: false)
         return b.finish()
+    }
+
+    // MARK: Lecture d'octets
+
+    private static func head(_ fh: FileHandle, at off: UInt64, _ n: Int) -> [UInt8] {
+        guard (try? fh.seek(toOffset: off)) != nil else { return [] }
+        return [UInt8]((try? fh.read(upToCount: n)) ?? Data())
+    }
+    private static func le(_ b: [UInt8], _ i: Int, _ n: Int) -> UInt64 {
+        guard i + n <= b.count else { return 0 }
+        return (0..<n).reduce(0) { $0 | UInt64(b[i + $1]) << (8 * UInt64($1)) }
+    }
+    private static func be(_ b: [UInt8], _ i: Int, _ n: Int) -> UInt64 {
+        guard i + n <= b.count else { return 0 }
+        return (0..<n).reduce(0) { $0 << 8 | UInt64(b[i + $1]) }
+    }
+
+    // MARK: RAR (3/4 et 5) : en-têtes seulement, rien n'est décompressé
+
+    private static func rar(_ url: URL) throws -> Listing {
+        guard let fh = try? FileHandle(forReadingFrom: url) else { throw ArchiveError.unreadable }
+        defer { try? fh.close() }
+        let end = (try? fh.seekToEnd()) ?? 0
+        let sig = head(fh, at: 0, 8)
+        var b = Builder()
+        var count = 0
+        if sig.starts(with: [0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01]) {
+            var pos: UInt64 = 8
+            while pos + 8 < end, count < 200_000 {
+                let buf = head(fh, at: pos, 4096)
+                guard buf.count > 8 else { break }
+                func vint(_ i: inout Int) -> UInt64 {
+                    var r: UInt64 = 0, sh: UInt64 = 0
+                    while i < buf.count { let c = buf[i]; i += 1; r |= UInt64(c & 0x7F) << sh; if c & 0x80 == 0 { break }; sh += 7; if sh > 63 { break } }
+                    return r
+                }
+                var i = 4
+                let hsize = vint(&i)
+                let afterSize = i
+                let type = vint(&i), flags = vint(&i)
+                if type == 4 { throw ArchiveError.unreadable }                          // en-têtes chiffrés
+                if flags & 1 != 0 { _ = vint(&i) }
+                let dataSize = flags & 2 != 0 ? vint(&i) : 0
+                if type == 2 {
+                    let ff = vint(&i)
+                    let usize = vint(&i)
+                    _ = vint(&i)                                                       // attributs
+                    if ff & 2 != 0 { i += 4 }
+                    if ff & 4 != 0 { i += 4 }
+                    _ = vint(&i); _ = vint(&i)
+                    let nl = Int(vint(&i))
+                    if i + nl <= buf.count {
+                        let name = String(decoding: buf[i..<(i + nl)], as: UTF8.self)
+                        let isDir = ff & 1 != 0
+                        b.add(path: name, size: Int64(usize), isDir: isDir); count += 1
+                    }
+                }
+                if type == 5 { break }
+                pos += UInt64(afterSize) + hsize + dataSize
+            }
+        } else if sig.starts(with: [0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00]) {
+            var pos: UInt64 = 7
+            while pos + 7 < end, count < 200_000 {
+                let h = head(fh, at: pos, 32 + 4096)
+                guard h.count >= 7 else { break }
+                let type = h[2], flags = Int(le(h, 3, 2)), hsize = Int(le(h, 5, 2))
+                guard hsize >= 7 else { break }
+                if type == 0x73, flags & 0x80 != 0 { throw ArchiveError.unreadable }    // en-têtes chiffrés
+                var add = flags & 0x8000 != 0 ? le(h, 7, 4) : 0
+                if type == 0x74 {
+                    add = le(h, 7, 4)
+                    var usize = le(h, 11, 4)
+                    let nl = Int(le(h, 26, 2))
+                    var o = 32
+                    if flags & 0x100 != 0 { add |= le(h, 32, 4) << 32; usize |= le(h, 36, 4) << 32; o = 40 }
+                    if o + nl <= h.count {
+                        var raw = Array(h[o..<(o + nl)])
+                        if flags & 0x200 != 0, let z = raw.firstIndex(of: 0) { raw = Array(raw[0..<z]) }
+                        let name = (String(bytes: raw, encoding: .utf8) ?? String(bytes: raw, encoding: .isoLatin1) ?? "").replacingOccurrences(of: "\\", with: "/")
+                        b.add(path: name, size: Int64(usize), isDir: flags & 0xE0 == 0xE0); count += 1
+                    }
+                }
+                if type == 0x7B { break }
+                pos += UInt64(hsize) + add
+            }
+        } else { throw ArchiveError.unreadable }
+        return b.finish()
+    }
+
+    // MARK: 7z
+
+    private struct SZReader {
+        let b: [UInt8]
+        var p = 0
+        init(_ b: [UInt8]) { self.b = b }
+        mutating func byte() throws -> UInt8 { guard p < b.count else { throw ArchiveError.unreadable }; defer { p += 1 }; return b[p] }
+        mutating func num() throws -> UInt64 {
+            let first = try byte()
+            var mask: UInt8 = 0x80, v: UInt64 = 0
+            for i in 0..<8 {
+                if first & mask == 0 { return v | UInt64(first & (mask &- 1)) << (8 * UInt64(i)) }
+                v |= UInt64(try byte()) << (8 * UInt64(i))
+                mask >>= 1
+            }
+            return v
+        }
+        mutating func skip(_ n: Int) throws { guard n >= 0, p + n <= b.count else { throw ArchiveError.unreadable }; p += n }
+        mutating func bits(_ n: Int) throws -> [Bool] {
+            var r: [Bool] = []; var cur: UInt8 = 0
+            for i in 0..<n { if i % 8 == 0 { cur = try byte() }; r.append(cur & (0x80 >> UInt8(i % 8)) != 0) }
+            return r
+        }
+        mutating func defined(_ n: Int) throws -> [Bool] {
+            let all = try byte()
+            return all != 0 ? [Bool](repeating: true, count: n) : try bits(n)
+        }
+    }
+
+    private struct SZFolder { var crcDefined = false; var coders: [(id: [UInt8], props: [UInt8], nOut: Int)] = []; var unpack: [UInt64] = []; var packIndices: [Int] = [] }
+
+    private struct SZStreams {
+        var packPos: UInt64 = 0
+        var packSizes: [UInt64] = []
+        var folders: [SZFolder] = []
+        var subCounts: [Int] = []
+        var subSizes: [UInt64] = []
+        var folderSize: (SZFolder) -> UInt64 = { $0.unpack.last ?? 0 }
+    }
+
+    private static func szStreams(_ r: inout SZReader) throws -> SZStreams {
+        var s = SZStreams()
+        func skipDigests(_ r: inout SZReader, _ n: Int) throws {
+            let d = try r.defined(n)
+            for x in d where x { try r.skip(4) }
+        }
+        while true {
+            let id = try r.byte()
+            switch id {
+            case 0x00: return s
+            case 0x06:
+                s.packPos = try r.num()
+                let n = Int(try r.num())
+                while true {
+                    let t = try r.byte()
+                    if t == 0 { break }
+                    if t == 9 { for _ in 0..<n { s.packSizes.append(try r.num()) } }
+                    else if t == 10 { try skipDigests(&r, n) }
+                    else { throw ArchiveError.unreadable }
+                }
+            case 0x07:
+                guard try r.byte() == 0x0B else { throw ArchiveError.unreadable }
+                let nf = Int(try r.num())
+                guard try r.byte() == 0 else { throw ArchiveError.unreadable }
+                for _ in 0..<nf {
+                    var f = SZFolder()
+                    let nc = Int(try r.num())
+                    var totalIn = 0, totalOut = 0
+                    for _ in 0..<nc {
+                        let flag = try r.byte()
+                        let idLen = Int(flag & 0xF)
+                        var id: [UInt8] = []; for _ in 0..<idLen { id.append(try r.byte()) }
+                        var nIn = 1, nOut = 1
+                        if flag & 0x10 != 0 { nIn = Int(try r.num()); nOut = Int(try r.num()) }
+                        var props: [UInt8] = []
+                        if flag & 0x20 != 0 { let n = Int(try r.num()); for _ in 0..<n { props.append(try r.byte()) } }
+                        f.coders.append((id, props, nOut)); totalIn += nIn; totalOut += nOut
+                    }
+                    let nb = totalOut - 1
+                    for _ in 0..<nb { _ = try r.num(); _ = try r.num() }
+                    let np = totalIn - nb
+                    if np > 1 { for _ in 0..<np { f.packIndices.append(Int(try r.num())) } }
+                    f.unpack = []
+                    s.folders.append(f)
+                }
+                guard try r.byte() == 0x0C else { throw ArchiveError.unreadable }
+                for i in 0..<nf {
+                    let outs = s.folders[i].coders.reduce(0) { $0 + $1.nOut }
+                    for _ in 0..<outs { s.folders[i].unpack.append(try r.num()) }
+                }
+                while true {
+                    let t = try r.byte()
+                    if t == 0 { break }
+                    if t == 0x0A {
+                        let d = try r.defined(nf)
+                        for (i, x) in d.enumerated() where x { try r.skip(4); s.folders[i].crcDefined = true }
+                    } else { throw ArchiveError.unreadable }
+                }
+            case 0x08:
+                s.subCounts = s.folders.map { _ in 1 }
+                var t = try r.byte()
+                if t == 0x0D { s.subCounts = []; for _ in s.folders { s.subCounts.append(Int(try r.num())) }; t = try r.byte() }
+                if t == 0x09 {
+                    for (i, f) in s.folders.enumerated() {
+                        var sum: UInt64 = 0
+                        let n = s.subCounts[i]
+                        if n == 0 { continue }
+                        for _ in 0..<(n - 1) { let v = try r.num(); s.subSizes.append(v); sum += v }
+                        s.subSizes.append((f.unpack.last ?? 0) &- sum)
+                    }
+                    t = try r.byte()
+                } else {
+                    for (i, f) in s.folders.enumerated() where s.subCounts[i] == 1 { s.subSizes.append(f.unpack.last ?? 0) }
+                }
+                while t != 0 {
+                    if t == 0x0A {
+                        // résumés : un par flux dont la somme n'est pas déjà connue
+                        var n = 0
+                        for (i, f) in s.folders.enumerated() { n += (s.subCounts[i] == 1 && f.crcDefined) ? 0 : s.subCounts[i] }
+                        try skipDigests(&r, n)
+                    } else { throw ArchiveError.unreadable }
+                    t = try r.byte()
+                }
+            default: throw ArchiveError.unreadable
+            }
+        }
+    }
+
+    private static func sevenZip(_ url: URL) throws -> Listing {
+        guard let fh = try? FileHandle(forReadingFrom: url) else { throw ArchiveError.unreadable }
+        defer { try? fh.close() }
+        let sh = head(fh, at: 0, 32)
+        guard sh.count == 32, sh.starts(with: [0x37, 0x7A, 0xBC, 0xAF, 0x27, 0x1C]) else { throw ArchiveError.unreadable }
+        let off = le(sh, 12, 8), size = le(sh, 20, 8)
+        guard size > 0, size < 1 << 28 else { throw ArchiveError.unreadable }
+        var hdr = head(fh, at: 32 + off, Int(size))
+        guard hdr.count == Int(size) else { throw ArchiveError.unreadable }
+        var rounds = 0
+        while hdr.first == 0x17, rounds < 3 {                                           // en-tête compressé
+            rounds += 1
+            var r = SZReader(hdr); r.p = 1
+            let st = try szStreams(&r)
+            guard let f = st.folders.first, let c = f.coders.first, st.packSizes.count >= 1 else { throw ArchiveError.unsupported }
+            let packed = head(fh, at: 32 + st.packPos, Int(st.packSizes[0]))
+            let outSize = Int(f.unpack.last ?? 0)
+            if c.id == [0x03, 0x01, 0x01], f.coders.count == 1 {
+                guard let d = LZMA.decode(props: c.props, input: packed, outSize: outSize) else { throw ArchiveError.unreadable }
+                hdr = d
+            } else if c.id == [0x00], f.coders.count == 1 { hdr = packed }
+            else { throw ArchiveError.unsupported }
+        }
+        guard hdr.first == 0x01 else { throw ArchiveError.unreadable }
+        var r = SZReader(hdr); r.p = 1
+        var streams = SZStreams()
+        var b = Builder()
+        loop: while true {
+            let id = try r.byte()
+            switch id {
+            case 0x00: break loop
+            case 0x02: while true { let t = try r.byte(); if t == 0 { break }; try r.skip(Int(try r.num())) }
+            case 0x03: _ = try szStreams(&r)
+            case 0x04: streams = try szStreams(&r)
+            case 0x05:
+                let n = Int(try r.num())
+                guard n < 1_000_000 else { throw ArchiveError.unreadable }
+                var names: [String] = []
+                var emptyStream = [Bool](repeating: false, count: n)
+                var emptyFile: [Bool] = []
+                while true {
+                    let t = try r.byte()
+                    if t == 0 { break }
+                    let sz = Int(try r.num())
+                    let endP = r.p + sz
+                    switch t {
+                    case 0x11:
+                        _ = try r.byte()
+                        var cur: [UInt16] = []
+                        while r.p + 1 < endP + 0, names.count < n {
+                            let u = UInt16(try r.byte()) | UInt16(try r.byte()) << 8
+                            if u == 0 { names.append(String(decoding: cur, as: UTF16.self)); cur = [] } else { cur.append(u) }
+                        }
+                    case 0x0E: emptyStream = try r.bits(n)
+                    case 0x0F: emptyFile = try r.bits(emptyStream.filter { $0 }.count)
+                    default: break
+                    }
+                    r.p = endP
+                }
+                var si = 0, ei = 0
+                for i in 0..<min(n, names.count) {
+                    if emptyStream[i] {
+                        let isFile = ei < emptyFile.count && emptyFile[ei]; ei += 1
+                        b.add(path: names[i], size: 0, isDir: !isFile)
+                    } else {
+                        let sz = si < streams.subSizes.count ? streams.subSizes[si] : 0; si += 1
+                        b.add(path: names[i], size: Int64(sz), isDir: false)
+                    }
+                }
+            default: break loop
+            }
+        }
+        return b.finish()
+    }
+
+    // MARK: DMG : description du disque (les fichiers ne sont lisibles qu'une fois l'image montée)
+
+    private static func dmg(_ url: URL) throws -> Listing {
+        guard let fh = try? FileHandle(forReadingFrom: url) else { throw ArchiveError.unreadable }
+        defer { try? fh.close() }
+        let end = (try? fh.seekToEnd()) ?? 0
+        guard end > 512 else { throw ArchiveError.unreadable }
+        let k = head(fh, at: end - 512, 512)
+        guard k.starts(with: Array("koly".utf8)) else { throw ArchiveError.unsupported }
+        let xmlOff = be(k, 0xD8, 8), xmlLen = be(k, 0xE0, 8)
+        guard xmlLen > 0, xmlLen < 1 << 26 else { throw ArchiveError.unreadable }
+        let xml = Data(head(fh, at: xmlOff, Int(xmlLen)))
+        guard let plist = try? PropertyListSerialization.propertyList(from: xml, options: [], format: nil) as? [String: Any],
+              let rs = plist["resource-fork"] as? [String: Any], let blkx = rs["blkx"] as? [[String: Any]] else { throw ArchiveError.unreadable }
+        var b = Builder()
+        for e in blkx {
+            var name = (e["Name"] as? String) ?? ""
+            if name.trimmingCharacters(in: .whitespaces).isEmpty { name = (e["CFName"] as? String) ?? "?" }
+            name = name.trimmingCharacters(in: .whitespaces)
+            if ["Apple_Free", "GPT", "MBR", "Protective", "Driver Descriptor", "partition_map"].contains(where: { name.contains($0) }) { continue }
+            var bytes: Int64 = 0
+            if let d = e["Data"] as? Data, d.count >= 0x28, String(decoding: d.prefix(4), as: UTF8.self) == "mish" {
+                let a = [UInt8](d)
+                bytes = Int64(be(a, 0x10, 8)) * 512                                     // nombre de secteurs
+            }
+            b.add(path: name, size: bytes, isDir: false)
+        }
+        var l = b.finish()
+        l.note = "dmg"
+        return l
     }
 }

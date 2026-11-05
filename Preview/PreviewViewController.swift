@@ -4,12 +4,14 @@
 import AppKit
 import AVKit
 import QuickLookUI
+import WebKit
 
 @objc(PreviewViewController)
 final class PreviewViewController: NSViewController, QLPreviewingController {
     private var alphaPlayer: AlphaPlayerView?
     private var avPlayer: AVQueuePlayer?
     private var looper: AVPlayerLooper?
+    private var webNav: WebNav?
 
     override func loadView() {
         let v = NSView(frame: NSRect(x: 0, y: 0, width: 800, height: 500))
@@ -19,6 +21,17 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
+        if let kind = WebDoc.kind(of: url) {
+            guard let page = WebDoc.html(for: url, kind: kind) else { handler(FrameError.unreadable); return }
+            let web = WKWebView(frame: view.bounds, configuration: WKWebViewConfiguration())
+            let nav = WebNav(done: { handler(nil) })
+            web.navigationDelegate = nav
+            self.webNav = nav
+            embed(web)
+            preferredContentSize = CGSize(width: 860, height: 700)
+            web.loadHTMLString(page, baseURL: nil)
+            return
+        }
         var isDir: ObjCBool = false
         let exists = FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
         if (exists && isDir.boolValue) || Archives.kind(of: url) != nil {
@@ -104,5 +117,20 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             alphaPlayer?.stop()
             avPlayer?.pause()
         }
+    }
+}
+
+
+/// Page web locale : fin du chargement signalée à QuickLook ; les liens s'ouvrent dans le navigateur, jamais dans l'aperçu.
+final class WebNav: NSObject, WKNavigationDelegate {
+    private var done: (() -> Void)?
+    init(done: @escaping () -> Void) { self.done = done }
+    func webView(_ w: WKWebView, didFinish n: WKNavigation!) { done?(); done = nil }
+    func webView(_ w: WKWebView, didFail n: WKNavigation!, withError e: Error) { done?(); done = nil }
+    func webView(_ w: WKWebView, decidePolicyFor a: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        if a.navigationType == .linkActivated, let u = a.request.url {
+            if ["http", "https", "mailto"].contains(u.scheme ?? "") { NSWorkspace.shared.open(u) }
+            decisionHandler(.cancel)
+        } else { decisionHandler(.allow) }
     }
 }

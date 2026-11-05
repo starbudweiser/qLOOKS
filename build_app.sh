@@ -28,9 +28,10 @@ build_ext() {
   "${SWIFTC[@]}" -parse-as-library -application-extension -module-name "$name" -framework "$fw" \
     -Xlinker -e -Xlinker _NSExtensionMain -o "$ext/Contents/MacOS/$name" "$@" Shared/*.swift
   cp "Resources/$name-Info.plist" "$ext/Contents/Info.plist"
+  if [ "$name" = Preview ]; then mkdir -p "$ext/Contents/Resources" && cp -R Resources/web "$ext/Contents/Resources/web"; fi
   SIGN_ENTITLEMENTS="$PWD/Resources/Extension.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$ext"
 }
-build_ext Preview QuickLookUI Preview/*.swift
+build_ext Preview QuickLookUI -framework WebKit Preview/*.swift
 build_ext Thumbnail QuickLookThumbnailing Thumbnail/*.swift
 
 # Décodeur vidéo (MediaExtension, ExtensionKit) : PNG et Animation pour tout macOS. Exige le profil de provisionnement.

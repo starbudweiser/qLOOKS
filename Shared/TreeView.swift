@@ -22,6 +22,7 @@ final class TreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate {
         if listing.dirCount > 0 { parts.append(L.t("tree.dirs", listing.dirCount)) }
         if listing.totalSize > 0 { parts.append(fmt.string(fromByteCount: listing.totalSize)) }
         if listing.partial { parts.append(L.t("tree.partial")) }
+        if listing.note == "dmg" { parts = [L.t("tree.dmg")] }
         summary.stringValue = title + "  ·  " + parts.joined(separator: " · ")
         summary.font = .systemFont(ofSize: 12, weight: .medium)
         summary.textColor = NSColor(srgbRed: 0.667, green: 0.667, blue: 0.667, alpha: 1)
