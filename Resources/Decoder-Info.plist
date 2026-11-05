@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key><string>en</string>
-	<key>CFBundleDisplayName</key><string>aLPHALOOK PNG et Animation</string>
+	<key>CFBundleDisplayName</key><string>qLOOKS PNG et Animation</string>
 	<key>CFBundleExecutable</key><string>Decoder</string>
 	<key>CFBundleIdentifier</key><string>fr.stephan.alphalook.decoder</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
@@ -18,7 +18,7 @@
 		<key>ClassImplementationID</key><string>fr.stephan.alphalook.videodecoder.pngrle</string>
 		<key>EXExtensionPointIdentifier</key><string>com.apple.mediaextension.videodecoder</string>
 		<key>EXPrincipalClass</key><string>DecoderExtension</string>
-		<key>ObjectName</key><string>aLPHALOOK PNG and Animation decoder</string>
+		<key>ObjectName</key><string>qLOOKS PNG and Animation decoder</string>
 		<key>CodecInfo</key>
 		<array>
 			<dict><key>CodecType</key><string>png </string><key>CodecName</key><string>PNG</string></dict>

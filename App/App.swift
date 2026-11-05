@@ -1,4 +1,4 @@
-// aLPHALOOK — appli hôte des extensions QuickLook : réglages de l'aperçu (fond, boucle), état des extensions, essai d'un fichier.
+// qLOOKS — appli hôte des extensions QuickLook : réglages de l'aperçu (fond, boucle), état des extensions, essai d'un fichier.
 import SwiftUI
 
 enum Brand {
@@ -11,7 +11,7 @@ struct AlphaLookApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var delegate
 
     var body: some Scene {
-        Window("aLPHALOOK", id: "main") {
+        Window("qLOOKS", id: "main") {
             ContentView()
         }
         .defaultSize(width: 776, height: 980)
@@ -26,11 +26,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var timer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Socle.brand("aLPHALOOK", color: Brand.color)
+        Socle.brand("qLOOKS", color: Brand.color)
         Socle.apply()
         Extensions.shared.refresh()
         DispatchQueue.main.async {
-            NSApp.windows.first { $0.identifier?.rawValue.contains("main") == true || $0.title == "aLPHALOOK" }?.socleCenter()
+            NSApp.windows.first { $0.identifier?.rawValue.contains("main") == true || $0.title == "qLOOKS" }?.socleCenter()
         }
         Task { @MainActor in Updater.shared.tick(busy: false) }
         timer = Timer.scheduledTimer(withTimeInterval: 3600, repeats: true) { _ in

@@ -1,4 +1,4 @@
-// aLPHALOOK — extension d'aperçu QuickLook (barre d'espace) pour les .MOV.
+// qLOOKS — extension d'aperçu QuickLook (barre d'espace) pour les .MOV.
 // Vidéo à couche alpha ou codec que macOS ne lit pas (PNG, Animation) : notre lecteur sur damier.
 // Autre vidéo : le lecteur du système (AVKit), avec le son.
 import AppKit

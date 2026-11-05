@@ -3,13 +3,13 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key><string>en</string>
-	<key>CFBundleDisplayName</key><string>aLPHALOOK</string>
-	<key>CFBundleExecutable</key><string>aLPHALOOK</string>
+	<key>CFBundleDisplayName</key><string>qLOOKS</string>
+	<key>CFBundleExecutable</key><string>qLOOKS</string>
 	<key>CFBundleIconFile</key><string>AppIcon</string>
 	<key>CFBundleIdentifier</key><string>fr.stephan.alphalook</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
 	<key>CFBundleLocalizations</key><array><string>fr</string><string>en</string><string>es</string><string>it</string></array>
-	<key>CFBundleName</key><string>aLPHALOOK</string>
+	<key>CFBundleName</key><string>qLOOKS</string>
 	<key>CFBundlePackageType</key><string>APPL</string>
 	<key>CFBundleShortVersionString</key><string>1.0.0</string>
 	<key>CFBundleVersion</key><string>1</string>

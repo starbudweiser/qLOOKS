@@ -1,12 +1,12 @@
 #!/bin/zsh
-# Construit « aLPHALOOK.app » et ses deux extensions QuickLook (aperçu, vignettes), signe le tout (extensions d'abord,
+# Construit « qLOOKS.app » et ses deux extensions QuickLook (aperçu, vignettes), signe le tout (extensions d'abord,
 # avec leurs droits de sandbox), installe dans ~/Applications/Applications Personnelles et enregistre les extensions.
 # NO_INSTALL=1 : ne pas installer. Aucune fenêtre n'est ouverte.
 set -euo pipefail
 cd "$(dirname "$0")"
 SRC="$PWD"
-WORK="$HOME/Library/Caches/aLPHALOOK-build"   # disque local : un volume externe ajoute des métadonnées qui font échouer codesign
-APP="$WORK/aLPHALOOK.app"
+WORK="$HOME/Library/Caches/qLOOKS-build"   # disque local : un volume externe ajoute des métadonnées qui font échouer codesign
+APP="$WORK/qLOOKS.app"
 DEST="$HOME/Applications/Applications Personnelles"
 SIGN="/Volumes/SKYRIM/TOOLS/MAC/_tools/sign_app.sh"
 TARGET="arm64-apple-macos15"
@@ -16,7 +16,7 @@ rm -rf "$WORK"; mkdir -p "$WORK"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/PlugIns"
 
 # Appli hôte
-"${SWIFTC[@]}" -parse-as-library -module-name aLPHALOOK -o "$APP/Contents/MacOS/aLPHALOOK" App/*.swift Shared/*.swift
+"${SWIFTC[@]}" -parse-as-library -module-name qLOOKS -o "$APP/Contents/MacOS/qLOOKS" App/*.swift Shared/*.swift
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
@@ -48,18 +48,21 @@ SIGN_ENTITLEMENTS="$PWD/Resources/App.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$APP
 
 if [ -z "${NO_INSTALL:-}" ]; then
   mkdir -p "$DEST"
-  pkill -x aLPHALOOK 2>/dev/null || true
-  rm -rf "$DEST/aLPHALOOK.app"
-  ditto --norsrc --noextattr "$APP" "$DEST/aLPHALOOK.app"
+  pkill -x qLOOKS 2>/dev/null || true
+  rm -rf "$DEST/qLOOKS.app"
+  ditto --norsrc --noextattr "$APP" "$DEST/qLOOKS.app"
   LSREG=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
-  "$LSREG" -f -R "$DEST/aLPHALOOK.app"
-  pluginkit -a "$DEST/aLPHALOOK.app/Contents/PlugIns/Preview.appex"
-  pluginkit -a "$DEST/aLPHALOOK.app/Contents/PlugIns/Thumbnail.appex"
+  "$LSREG" -f -R "$DEST/qLOOKS.app"
+  pluginkit -a "$DEST/qLOOKS.app/Contents/PlugIns/Preview.appex"
+  pluginkit -a "$DEST/qLOOKS.app/Contents/PlugIns/Thumbnail.appex"
+  [ -d "$DEST/qLOOKS.app/Contents/Extensions/Decoder.appex" ] && pluginkit -a "$DEST/qLOOKS.app/Contents/Extensions/Decoder.appex"
+  sleep 2
   # Sans ce choix explicite, le lecteur intégré de macOS garde la priorité pour les .mov ; il est perdu à chaque réinstallation.
   pluginkit -e use -i fr.stephan.alphalook.preview
   pluginkit -e use -i fr.stephan.alphalook.thumbnail
+  pluginkit -e use -i fr.stephan.alphalook.decoder
   qlmanage -r >/dev/null 2>&1 || true
   qlmanage -r cache >/dev/null 2>&1 || true
-  echo "Installée : $DEST/aLPHALOOK.app"
+  echo "Installée : $DEST/qLOOKS.app"
 fi
 echo "OK : $APP"

@@ -1,4 +1,4 @@
-// aLPHALOOK — lecture minimale d'un conteneur QuickTime (.MOV) : piste vidéo, codec et table des images.
+// qLOOKS — lecture minimale d'un conteneur QuickTime (.MOV) : piste vidéo, codec et table des images.
 // Sert aux codecs que macOS ne décode plus (PNG, Animation) : on lit nous-mêmes chaque image dans le fichier.
 import Foundation
 

@@ -1,4 +1,4 @@
-// aLPHALOOK — sources d'images : PNG et Animation lus par nos soins, tout le reste (ProRes 4444, HEVC alpha…) par AVFoundation.
+// qLOOKS — sources d'images : PNG et Animation lus par nos soins, tout le reste (ProRes 4444, HEVC alpha…) par AVFoundation.
 import AVFoundation
 import CoreGraphics
 import ImageIO

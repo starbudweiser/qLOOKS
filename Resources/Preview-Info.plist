@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key><string>en</string>
-	<key>CFBundleDisplayName</key><string>aLPHALOOK Preview</string>
+	<key>CFBundleDisplayName</key><string>qLOOKS Preview</string>
 	<key>CFBundleExecutable</key><string>Preview</string>
 	<key>CFBundleIdentifier</key><string>fr.stephan.alphalook.preview</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>

@@ -1,4 +1,4 @@
-// aLPHALOOK — mise à jour depuis les releases GitHub : recherche, téléchargement, vérification de la signature, remplacement.
+// qLOOKS — mise à jour depuis les releases GitHub : recherche, téléchargement, vérification de la signature, remplacement.
 import Foundation
 import SwiftUI
 
@@ -15,7 +15,7 @@ final class Updater: ObservableObject {
         case failed(String)
     }
 
-    static let repo = "starbudweiser/aLPHALOOK"
+    static let repo = "starbudweiser/qLOOKS"
     static let teamID = "35KLMK53PN"                   // seule signature acceptée pour une mise à jour
     private let interval: TimeInterval = 24 * 3600
 
@@ -64,7 +64,7 @@ final class Updater: ObservableObject {
         guard case .available = state, let url = assetURL else { return }
         state = .downloading
         do {
-            let work = FileManager.default.temporaryDirectory.appendingPathComponent("aLPHALOOK-update-\(UUID().uuidString)")
+            let work = FileManager.default.temporaryDirectory.appendingPathComponent("qLOOKS-update-\(UUID().uuidString)")
             try FileManager.default.createDirectory(at: work, withIntermediateDirectories: true)
             let (tmp, resp) = try await URLSession.shared.download(from: url)
             guard (resp as? HTTPURLResponse)?.statusCode == 200 else { throw UpdateError.download }
@@ -72,7 +72,7 @@ final class Updater: ObservableObject {
             try FileManager.default.moveItem(at: tmp, to: zip)
             let out = work.appendingPathComponent("out")
             try await Self.run("/usr/bin/ditto", ["-x", "-k", zip.path, out.path])
-            let app = out.appendingPathComponent("aLPHALOOK.app")
+            let app = out.appendingPathComponent("qLOOKS.app")
             try await Self.verify(app)
             try Self.swapAndRelaunch(new: app, work: work)
         } catch {

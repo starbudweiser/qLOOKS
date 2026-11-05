@@ -1,4 +1,4 @@
-// aLPHALOOK — décodeur du codec QuickTime Animation (« rle »), profondeurs 32 (ARVB), 24 (RVB) et 16 bits (RVB 555).
+// qLOOKS — décodeur du codec QuickTime Animation (« rle »), profondeurs 32 (ARVB), 24 (RVB) et 16 bits (RVB 555).
 // Chaque image ne décrit que les lignes qui changent : le décodeur garde l'image précédente et la met à jour.
 import CoreGraphics
 import Foundation

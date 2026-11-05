@@ -1,4 +1,4 @@
-// aLPHALOOK — fenêtre « À propos » (modèle Socle : swift/AboutWindow.swift).
+// qLOOKS — fenêtre « À propos » (modèle Socle : swift/AboutWindow.swift).
 import AppKit
 
 @MainActor
@@ -28,8 +28,8 @@ enum About {
 
     /// Nom de l'appli avec son « m » dans la couleur du logo.
     private static func nameLabel() -> NSTextField {
-        let f = label("aLPHALOOK", size: 17, bold: true)
-        let s = NSMutableAttributedString(string: "aLPHALOOK", attributes: [.font: NSFont.boldSystemFont(ofSize: 17), .foregroundColor: NSColor.labelColor])
+        let f = label("qLOOKS", size: 17, bold: true)
+        let s = NSMutableAttributedString(string: "qLOOKS", attributes: [.font: NSFont.boldSystemFont(ofSize: 17), .foregroundColor: NSColor.labelColor])
         s.addAttribute(.foregroundColor, value: NSColor(srgbRed: 0x8b / 255, green: 0x5c / 255, blue: 0xf6 / 255, alpha: 1), range: NSRange(location: 0, length: 1))
         f.attributedStringValue = s
         f.alignment = .center

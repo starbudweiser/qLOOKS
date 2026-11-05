@@ -1,4 +1,4 @@
-// aLPHALOOK — textes de l'interface (français d'abord, anglais, espagnol, italien ; mêmes clés dans chaque table).
+// qLOOKS — textes de l'interface (français d'abord, anglais, espagnol, italien ; mêmes clés dans chaque table).
 import Foundation
 
 enum L {
@@ -17,8 +17,8 @@ enum L {
     static let tables: [String: [String: String]] = ["fr": fr, "en": en, "es": es, "it": it]
 
     static let fr: [String: String] = [
-        "app.tagline": "Aperçu QuickLook des vidéos .MOV à couche alpha, sur un damier.",
-        "menu.about": "À propos d'aLPHALOOK", "menu.quit": "Quitter aLPHALOOK",
+        "app.tagline": "Aperçus et vignettes QuickLook des formats que macOS ne gère pas, réunis en un seul endroit.",
+        "menu.about": "À propos de qLOOKS", "menu.quit": "Quitter qLOOKS",
         "pv.play": "Lecture / pause", "pv.loop": "Lire en boucle", "pv.background": "Fond derrière la vidéo",
         "pv.fps": "%@ i/s", "pv.alpha": "alpha", "pv.noalpha": "sans alpha",
         "bg.checker": "Damier", "bg.dark": "Sombre", "bg.light": "Clair",
@@ -28,7 +28,7 @@ enum L {
         "f.background": "Fond derrière la vidéo", "f.loop": "Lire en boucle",
         "f.autoplay": "Lancer la lecture à l'ouverture de l'aperçu",
         "f.hint": "Le fond et la boucle se changent aussi depuis la barre de l'aperçu.",
-        "sec.ext": "Extensions QuickLook", "sec.ext.sub": "aLPHALOOK remplace l'aperçu du système pour les fichiers .MOV.",
+        "sec.ext": "Extensions QuickLook", "sec.ext.sub": "qLOOKS remplace l'aperçu du système pour les fichiers .MOV.",
         "ext.preview": "Aperçu (barre d'espace)", "ext.thumb": "Vignettes du Finder",
         "ext.on": "Activée", "ext.off": "Désactivée", "ext.missing": "Non enregistrée",
         "btn.enable": "Activer", "btn.settings": "Ouvrir les réglages des extensions", "btn.reset": "Recalculer les vignettes",
@@ -37,8 +37,8 @@ enum L {
         "sec.try": "Essai", "sec.try.sub": "Glissez un fichier .MOV ici pour voir son aperçu.",
         "btn.open": "Choisir un fichier…", "try.drop": "Déposez un fichier .MOV",
         "try.formats": "PNG, Animation, ProRes 4444 et toute vidéo lue par macOS.",
-        "about.menu": "À propos d'aLPHALOOK", "about.version": "Version %@ (%@)",
-        "about.tagline": "Aperçu QuickLook des vidéos .MOV à couche alpha, sur un damier.",
+        "about.menu": "À propos de qLOOKS", "about.version": "Version %@ (%@)",
+        "about.tagline": "Aperçus et vignettes QuickLook des formats que macOS ne gère pas, réunis en un seul endroit.",
         "about.authors": "Starbudweiser & Claude Code (Anthropic)", "about.license": "Licence MIT. © 2026 Starbudweiser.",
         "about.disclaimer": "Fourni en l'état, sans garantie.",
         "about.credit": "Sans lien avec Apple ni Video Copilot.",
@@ -48,7 +48,7 @@ enum L {
         "upd.install": "Installer la version %@",
         "upd.version": "Version installée : %@",
         "upd.checking": "Recherche en cours…",
-        "upd.uptodate": "aLPHALOOK est à jour (version %@).",
+        "upd.uptodate": "qLOOKS est à jour (version %@).",
         "upd.available": "La version %@ est disponible.",
         "upd.downloading": "Téléchargement et installation… l'application va redémarrer.",
         "upd.failed": "Échec de la mise à jour : %@",
@@ -59,8 +59,8 @@ enum L {
     ]
 
     static let en: [String: String] = [
-        "app.tagline": "Quick Look previews of .MOV videos with an alpha channel, on a checkerboard.",
-        "menu.about": "About aLPHALOOK", "menu.quit": "Quit aLPHALOOK",
+        "app.tagline": "Quick Look previews and thumbnails for the formats macOS does not handle, in one place.",
+        "menu.about": "About qLOOKS", "menu.quit": "Quit qLOOKS",
         "pv.play": "Play / pause", "pv.loop": "Loop", "pv.background": "Background behind the video",
         "pv.fps": "%@ fps", "pv.alpha": "alpha", "pv.noalpha": "no alpha",
         "bg.checker": "Checkerboard", "bg.dark": "Dark", "bg.light": "Light",
@@ -70,7 +70,7 @@ enum L {
         "f.background": "Background behind the video", "f.loop": "Loop",
         "f.autoplay": "Start playing when the preview opens",
         "f.hint": "The background and loop can also be changed from the preview bar.",
-        "sec.ext": "Quick Look extensions", "sec.ext.sub": "aLPHALOOK replaces the system preview for .MOV files.",
+        "sec.ext": "Quick Look extensions", "sec.ext.sub": "qLOOKS replaces the system preview for .MOV files.",
         "ext.preview": "Preview (space bar)", "ext.thumb": "Finder thumbnails",
         "ext.on": "Enabled", "ext.off": "Disabled", "ext.missing": "Not registered",
         "btn.enable": "Enable", "btn.settings": "Open extension settings", "btn.reset": "Rebuild thumbnails",
@@ -79,8 +79,8 @@ enum L {
         "sec.try": "Try it", "sec.try.sub": "Drop a .MOV file here to see its preview.",
         "btn.open": "Choose a file…", "try.drop": "Drop a .MOV file",
         "try.formats": "PNG, Animation, ProRes 4444 and any video macOS can play.",
-        "about.menu": "About aLPHALOOK", "about.version": "Version %@ (%@)",
-        "about.tagline": "Quick Look previews of .MOV videos with an alpha channel, on a checkerboard.",
+        "about.menu": "About qLOOKS", "about.version": "Version %@ (%@)",
+        "about.tagline": "Quick Look previews and thumbnails for the formats macOS does not handle, in one place.",
         "about.authors": "Starbudweiser & Claude Code (Anthropic)", "about.license": "MIT License. © 2026 Starbudweiser.",
         "about.disclaimer": "Provided as is, without warranty.",
         "about.credit": "Not affiliated with Apple or Video Copilot.",
@@ -90,7 +90,7 @@ enum L {
         "upd.install": "Install version %@",
         "upd.version": "Installed version: %@",
         "upd.checking": "Checking…",
-        "upd.uptodate": "aLPHALOOK is up to date (version %@).",
+        "upd.uptodate": "qLOOKS is up to date (version %@).",
         "upd.available": "Version %@ is available.",
         "upd.downloading": "Downloading and installing… the app will restart.",
         "upd.failed": "Update failed: %@",
@@ -101,8 +101,8 @@ enum L {
     ]
 
     static let es: [String: String] = [
-        "app.tagline": "Vista previa Quick Look de vídeos .MOV con canal alfa, sobre un damero.",
-        "menu.about": "Acerca de aLPHALOOK", "menu.quit": "Salir de aLPHALOOK",
+        "app.tagline": "Vistas previas y miniaturas Quick Look de los formatos que macOS no admite, en un solo lugar.",
+        "menu.about": "Acerca de qLOOKS", "menu.quit": "Salir de qLOOKS",
         "pv.play": "Reproducir / pausa", "pv.loop": "Reproducir en bucle", "pv.background": "Fondo detrás del vídeo",
         "pv.fps": "%@ fps", "pv.alpha": "alfa", "pv.noalpha": "sin alfa",
         "bg.checker": "Damero", "bg.dark": "Oscuro", "bg.light": "Claro",
@@ -112,7 +112,7 @@ enum L {
         "f.background": "Fondo detrás del vídeo", "f.loop": "Reproducir en bucle",
         "f.autoplay": "Reproducir al abrir la vista previa",
         "f.hint": "El fondo y el bucle también se cambian desde la barra de la vista previa.",
-        "sec.ext": "Extensiones Quick Look", "sec.ext.sub": "aLPHALOOK sustituye la vista previa del sistema para los archivos .MOV.",
+        "sec.ext": "Extensiones Quick Look", "sec.ext.sub": "qLOOKS sustituye la vista previa del sistema para los archivos .MOV.",
         "ext.preview": "Vista previa (barra espaciadora)", "ext.thumb": "Miniaturas del Finder",
         "ext.on": "Activada", "ext.off": "Desactivada", "ext.missing": "No registrada",
         "btn.enable": "Activar", "btn.settings": "Abrir los ajustes de extensiones", "btn.reset": "Regenerar las miniaturas",
@@ -121,8 +121,8 @@ enum L {
         "sec.try": "Prueba", "sec.try.sub": "Arrastre aquí un archivo .MOV para ver su vista previa.",
         "btn.open": "Elegir un archivo…", "try.drop": "Suelte un archivo .MOV",
         "try.formats": "PNG, Animation, ProRes 4444 y cualquier vídeo que lea macOS.",
-        "about.menu": "Acerca de aLPHALOOK", "about.version": "Versión %@ (%@)",
-        "about.tagline": "Vista previa Quick Look de vídeos .MOV con canal alfa, sobre un damero.",
+        "about.menu": "Acerca de qLOOKS", "about.version": "Versión %@ (%@)",
+        "about.tagline": "Vistas previas y miniaturas Quick Look de los formatos que macOS no admite, en un solo lugar.",
         "about.authors": "Starbudweiser & Claude Code (Anthropic)", "about.license": "Licencia MIT. © 2026 Starbudweiser.",
         "about.disclaimer": "Se ofrece tal cual, sin garantía.",
         "about.credit": "Sin relación con Apple ni con Video Copilot.",
@@ -132,7 +132,7 @@ enum L {
         "upd.install": "Instalar la versión %@",
         "upd.version": "Versión instalada: %@",
         "upd.checking": "Buscando…",
-        "upd.uptodate": "aLPHALOOK está al día (versión %@).",
+        "upd.uptodate": "qLOOKS está al día (versión %@).",
         "upd.available": "La versión %@ está disponible.",
         "upd.downloading": "Descargando e instalando… la aplicación se reiniciará.",
         "upd.failed": "Error de actualización: %@",
@@ -143,8 +143,8 @@ enum L {
     ]
 
     static let it: [String: String] = [
-        "app.tagline": "Anteprima Quick Look dei video .MOV con canale alfa, su una scacchiera.",
-        "menu.about": "Informazioni su aLPHALOOK", "menu.quit": "Esci da aLPHALOOK",
+        "app.tagline": "Anteprime e miniature Quick Look dei formati che macOS non gestisce, in un unico posto.",
+        "menu.about": "Informazioni su qLOOKS", "menu.quit": "Esci da qLOOKS",
         "pv.play": "Riproduci / pausa", "pv.loop": "Riproduci in loop", "pv.background": "Sfondo dietro il video",
         "pv.fps": "%@ fps", "pv.alpha": "alfa", "pv.noalpha": "senza alfa",
         "bg.checker": "Scacchiera", "bg.dark": "Scuro", "bg.light": "Chiaro",
@@ -154,7 +154,7 @@ enum L {
         "f.background": "Sfondo dietro il video", "f.loop": "Riproduci in loop",
         "f.autoplay": "Avvia la riproduzione all'apertura dell'anteprima",
         "f.hint": "Sfondo e loop si cambiano anche dalla barra dell'anteprima.",
-        "sec.ext": "Estensioni Quick Look", "sec.ext.sub": "aLPHALOOK sostituisce l'anteprima di sistema per i file .MOV.",
+        "sec.ext": "Estensioni Quick Look", "sec.ext.sub": "qLOOKS sostituisce l'anteprima di sistema per i file .MOV.",
         "ext.preview": "Anteprima (barra spaziatrice)", "ext.thumb": "Miniature del Finder",
         "ext.on": "Attivata", "ext.off": "Disattivata", "ext.missing": "Non registrata",
         "btn.enable": "Attiva", "btn.settings": "Apri le impostazioni delle estensioni", "btn.reset": "Rigenera le miniature",
@@ -163,8 +163,8 @@ enum L {
         "sec.try": "Prova", "sec.try.sub": "Trascina qui un file .MOV per vederne l'anteprima.",
         "btn.open": "Scegli un file…", "try.drop": "Rilascia un file .MOV",
         "try.formats": "PNG, Animation, ProRes 4444 e qualsiasi video letto da macOS.",
-        "about.menu": "Informazioni su aLPHALOOK", "about.version": "Versione %@ (%@)",
-        "about.tagline": "Anteprima Quick Look dei video .MOV con canale alfa, su una scacchiera.",
+        "about.menu": "Informazioni su qLOOKS", "about.version": "Versione %@ (%@)",
+        "about.tagline": "Anteprime e miniature Quick Look dei formati che macOS non gestisce, in un unico posto.",
         "about.authors": "Starbudweiser & Claude Code (Anthropic)", "about.license": "Licenza MIT. © 2026 Starbudweiser.",
         "about.disclaimer": "Fornito così com'è, senza garanzia.",
         "about.credit": "Senza legami con Apple né con Video Copilot.",
@@ -174,7 +174,7 @@ enum L {
         "upd.install": "Installa la versione %@",
         "upd.version": "Versione installata: %@",
         "upd.checking": "Ricerca in corso…",
-        "upd.uptodate": "aLPHALOOK è aggiornato (versione %@).",
+        "upd.uptodate": "qLOOKS è aggiornato (versione %@).",
         "upd.available": "È disponibile la versione %@.",
         "upd.downloading": "Download e installazione… l'applicazione verrà riavviata.",
         "upd.failed": "Aggiornamento non riuscito: %@",

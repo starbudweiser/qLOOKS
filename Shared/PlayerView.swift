@@ -1,4 +1,4 @@
-// aLPHALOOK — lecteur d'images à couche alpha : fond choisi (damier, sombre, clair), lecture en boucle, barre de commandes.
+// qLOOKS — lecteur d'images à couche alpha : fond choisi (damier, sombre, clair), lecture en boucle, barre de commandes.
 import AppKit
 
 @MainActor

@@ -1,4 +1,4 @@
-// aLPHALOOK — réglages partagés entre l'appli et ses extensions QuickLook (groupe d'applis), et fonds derrière la vidéo.
+// qLOOKS — réglages partagés entre l'appli et ses extensions QuickLook (groupe d'applis), et fonds derrière la vidéo.
 import CoreGraphics
 import Foundation
 

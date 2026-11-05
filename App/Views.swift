@@ -1,4 +1,4 @@
-// aLPHALOOK — fenêtre principale : une colonne de cartes Socle centrée.
+// qLOOKS — fenêtre principale : une colonne de cartes Socle centrée.
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -14,7 +14,7 @@ struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Socle.M.space4) {
                 VStack(alignment: .leading, spacing: Socle.M.space1) {
-                    Text(branded: "aLPHALOOK").socle(Socle.T.display).foregroundStyle(Socle.C.textStrong)
+                    Text(branded: "qLOOKS").socle(Socle.T.display).foregroundStyle(Socle.C.textStrong)
                     Text(L.t("app.tagline")).socle(Socle.T.body).foregroundStyle(Socle.C.textMuted)
                 }
                 previewCard

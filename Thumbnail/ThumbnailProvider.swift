@@ -1,4 +1,4 @@
-// aLPHALOOK — extension de vignettes QuickLook pour les .MOV : image la plus « remplie » de la vidéo, sur le fond choisi.
+// qLOOKS — extension de vignettes QuickLook pour les .MOV : image la plus « remplie » de la vidéo, sur le fond choisi.
 import CoreGraphics
 import QuickLookThumbnailing
 

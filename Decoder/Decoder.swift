@@ -1,4 +1,4 @@
-// aLPHALOOK — extension de décodage vidéo (MediaExtension) : PNG et Animation, pour que macOS lise ces codecs partout
+// qLOOKS — extension de décodage vidéo (MediaExtension) : PNG et Animation, pour que macOS lise ces codecs partout
 // (aperçu Quick Look d'Apple, QuickTime Player…). Sortie en BGRA avec alpha prémultiplié.
 import CoreMedia
 import CoreVideo
