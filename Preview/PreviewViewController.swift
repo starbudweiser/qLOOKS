@@ -19,7 +19,18 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
-        if Sources.needsAlphaView(url) {
+        if VectorImage.handles(url) {
+            Task { @MainActor in
+                guard let image = VectorImage.render(url, maxPixel: 2400) else { handler(FrameError.unreadable); return }
+                let canvas = CanvasView()
+                canvas.videoSize = CGSize(width: image.width, height: image.height)
+                canvas.backdrop = Prefs.backdrop
+                canvas.image = image
+                self.embed(canvas)
+                self.preferredContentSize = Self.fitted(canvas.videoSize, extra: 0)
+                handler(nil)
+            }
+        } else if Sources.needsAlphaView(url) {
             Task { @MainActor in
                 do {
                     let src = try await Sources.open(url)

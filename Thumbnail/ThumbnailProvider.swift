@@ -6,6 +6,17 @@ import QuickLookThumbnailing
 final class ThumbnailProvider: QLThumbnailProvider {
     override func provideThumbnail(for request: QLFileThumbnailRequest, _ handler: @escaping (QLThumbnailReply?, Error?) -> Void) {
         let url = request.fileURL, maxSize = request.maximumSize
+        if VectorImage.handles(url) {
+            let px = max(maxSize.width, maxSize.height) * request.scale
+            guard let image = VectorImage.render(url, maxPixel: px) else { handler(nil, FrameError.unreadable); return }
+            let size = Backdrops.fit(CGSize(width: image.width, height: image.height), in: CGRect(origin: .zero, size: maxSize)).size
+            handler(QLThumbnailReply(contextSize: size) { ctx in
+                ctx.interpolationQuality = .high
+                ctx.draw(image, in: CGRect(origin: .zero, size: size))
+                return true
+            }, nil)
+            return
+        }
         Task {
             do {
                 let src = try await Sources.open(url)
