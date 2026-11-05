@@ -211,8 +211,11 @@ final class AlphaPlayerView: NSView {
         request(i)
     }
 
+    private var ticks = 0
     private func tick() {
         guard playing else { return }
+        ticks += 1
+        if ticks % 48 == 1 { NSLog("aLPHALOOK tick %d target %d current %d", ticks, target, current) }
         if current == target {                          // l'image voulue est à l'écran : on passe à la suivante
             var n = target + 1
             if n >= source.frameCount {

@@ -64,9 +64,17 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
         return CGSize(width: max(480, (size.width * k).rounded()), height: (size.height * k).rounded() + extra)
     }
 
+    // QuickLook peut masquer puis réafficher la vue pendant le chargement : on met en pause, sans jamais abandonner la lecture.
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        NSLog("aLPHALOOK viewDidAppear")
+        if Prefs.autoplay { alphaPlayer?.play(); avPlayer?.play() }
+    }
+
     override func viewDidDisappear() {
         super.viewDidDisappear()
-        alphaPlayer?.stop()
+        NSLog("aLPHALOOK viewDidDisappear")
+        alphaPlayer?.pause()
         avPlayer?.pause()
     }
 
