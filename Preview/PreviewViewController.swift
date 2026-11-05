@@ -21,6 +21,19 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
+        if url.pathExtension.lowercased() == "gpx" {
+            Task {
+                guard let page = await GPX.html(for: url) else { handler(FrameError.unreadable); return }
+                let web = WKWebView(frame: self.view.bounds, configuration: WKWebViewConfiguration())
+                let nav = WebNav(done: { handler(nil) })
+                web.navigationDelegate = nav
+                self.webNav = nav
+                self.embed(web)
+                self.preferredContentSize = CGSize(width: 840, height: 760)
+                web.loadHTMLString(page, baseURL: nil)
+            }
+            return
+        }
         if let ak = AppInfo.kind(of: url) {
             Task.detached {
                 let page = AppInfo.html(for: url, kind: ak)
