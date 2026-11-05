@@ -618,6 +618,40 @@ enum Archives {
     // MARK: DMG : description du disque (les fichiers ne sont lisibles qu'une fois l'image montée)
 
     private static func dmg(_ url: URL) throws -> Listing {
+        guard let disk = UDIFDisk(url: url) else { throw ArchiveError.unsupported }
+        func tree(_ entries: [VolEntry], rootParent: UInt64) -> [TreeNode] {
+            var kids: [UInt64: [VolEntry]] = [:]
+            for e in entries where !e.name.hasPrefix(".") && !e.name.hasPrefix("\u{0}") { kids[e.parent, default: []].append(e) }
+            func build(_ e: VolEntry, _ depth: Int) -> TreeNode {
+                if e.isDir, depth < 24 {
+                    let c = TreeNode.sorted((kids[e.id] ?? []).map { build($0, depth + 1) })
+                    return TreeNode(name: e.name, isDir: true, size: c.reduce(0) { $0 + $1.size }, children: c)
+                }
+                return TreeNode(name: e.name, isDir: e.isDir, size: e.size)
+            }
+            return TreeNode.sorted((kids[rootParent] ?? []).map { build($0, 0) })
+        }
+        var roots: [TreeNode] = []
+        var seen = Set<UInt64>()
+        for p in disk.partitions where p.sectors > 64 {
+            guard seen.insert(p.start).inserted else { continue }
+            let vol = DiskVolume(disk: disk, base: p.start * 512)
+            if let e = HFSPlus.entries(vol) {
+                let t = tree(e, rootParent: 2)
+                roots += t
+            } else if let vols = APFS.volumes(vol) {
+                if vols.count == 1 { roots += tree(vols[0].entries, rootParent: 2) }
+                else { for v in vols { let t = tree(v.entries, rootParent: 2); roots.append(TreeNode(name: v.name, isDir: true, size: t.reduce(0) { $0 + $1.size }, children: t)) } }
+            }
+        }
+        if roots.isEmpty { return try dmgPartitions(url) }
+        var l = Listing(roots: TreeNode.sorted(roots))
+        func count(_ ns: [TreeNode]) { for n in ns { if n.isDir { l.dirCount += 1; count(n.children) } else { l.fileCount += 1; l.totalSize += n.size } } }
+        count(l.roots)
+        return l
+    }
+
+    private static func dmgPartitions(_ url: URL) throws -> Listing {
         guard let fh = try? FileHandle(forReadingFrom: url) else { throw ArchiveError.unreadable }
         defer { try? fh.close() }
         let end = (try? fh.seekToEnd()) ?? 0
