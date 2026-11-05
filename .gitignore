@@ -1,6 +1,6 @@
+*.app
+*.provisionprofile
 .DS_Store
 ._*
-*.app
 build/
 dist/
-*.provisionprofile

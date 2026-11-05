@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key><string>en</string>
+	<key>CFBundleDisplayName</key><string>qLOOKS Matroska</string>
+	<key>CFBundleExecutable</key><string>Reader</string>
+	<key>CFBundleIdentifier</key><string>fr.stephan.alphalook.reader</string>
+	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+	<key>CFBundleName</key><string>Reader</string>
+	<key>CFBundlePackageType</key><string>XPC!</string>
+	<key>CFBundleShortVersionString</key><string>1.0.0</string>
+	<key>CFBundleVersion</key><string>1.0.0</string>
+	<key>CFBundleSupportedPlatforms</key><array><string>MacOSX</string></array>
+	<key>LSMinimumSystemVersion</key><string>15.0</string>
+	<key>EXAppExtensionAttributes</key>
+	<dict>
+		<key>ClassImplementationID</key><string>fr.stephan.alphalook.formatreader.matroska</string>
+		<key>EXExtensionPointIdentifier</key><string>com.apple.mediaextension.formatreader</string>
+		<key>EXPrincipalClass</key><string>ReaderExtension</string>
+		<key>ObjectName</key><string>qLOOKS Matroska format reader</string>
+		<key>MTFileNameExtensionArray</key><array><string>mkv</string></array>
+		<key>MTUTTypeArray</key><array><string>org.matroska.mkv</string><string>io.iina.mkv</string></array>
+	</dict>
+</dict>
+</plist>

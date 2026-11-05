@@ -44,6 +44,19 @@ if [ -f Resources/Decoder.provisionprofile ]; then
   SIGN_ENTITLEMENTS="$PWD/Resources/Decoder.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$DEC"
 fi
 
+# Lecteur de format (MediaExtension) : fait lire le Matroska à tout macOS. Exige son profil de provisionnement.
+if [ -f Resources/Reader.provisionprofile ]; then
+  RD="$APP/Contents/Extensions/Reader.appex"
+  mkdir -p "$RD/Contents/MacOS"
+  clang -fobjc-arc -c Reader/Shim.m -target "$TARGET" -o "$WORK/shim.o"
+  "${SWIFTC[@]}" -parse-as-library -application-extension -module-name Reader -import-objc-header Reader/Shim.h \
+    -framework MediaExtension -framework ExtensionFoundation -Xlinker -e -Xlinker _EXExtensionMain \
+    -o "$RD/Contents/MacOS/Reader" Reader/Reader.swift Shared/Matroska.swift "$WORK/shim.o"
+  cp Resources/Reader-Info.plist "$RD/Contents/Info.plist"
+  cp Resources/Reader.provisionprofile "$RD/Contents/embedded.provisionprofile"
+  SIGN_ENTITLEMENTS="$PWD/Resources/Reader.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$RD"
+fi
+
 SIGN_ENTITLEMENTS="$PWD/Resources/App.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$APP"
 
 if [ -z "${NO_INSTALL:-}" ]; then
@@ -56,11 +69,13 @@ if [ -z "${NO_INSTALL:-}" ]; then
   pluginkit -a "$DEST/qLOOKS.app/Contents/PlugIns/Preview.appex"
   pluginkit -a "$DEST/qLOOKS.app/Contents/PlugIns/Thumbnail.appex"
   [ -d "$DEST/qLOOKS.app/Contents/Extensions/Decoder.appex" ] && pluginkit -a "$DEST/qLOOKS.app/Contents/Extensions/Decoder.appex"
+  [ -d "$DEST/qLOOKS.app/Contents/Extensions/Reader.appex" ] && pluginkit -a "$DEST/qLOOKS.app/Contents/Extensions/Reader.appex"
   sleep 2
   # Sans ce choix explicite, le lecteur intégré de macOS garde la priorité pour les .mov ; il est perdu à chaque réinstallation.
   pluginkit -e use -i fr.stephan.alphalook.preview
   pluginkit -e use -i fr.stephan.alphalook.thumbnail
   pluginkit -e use -i fr.stephan.alphalook.decoder
+  pluginkit -e use -i fr.stephan.alphalook.reader
   qlmanage -r >/dev/null 2>&1 || true
   qlmanage -r cache >/dev/null 2>&1 || true
   echo "Installée : $DEST/qLOOKS.app"

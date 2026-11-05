@@ -2,6 +2,31 @@
 // Les images ne sont pas lues ici : on garde seulement leur position dans le fichier, comme pour MovFile.
 import Foundation
 
+/// Source d'octets : fichier local, ou source fournie par MediaExtension.
+protocol MKVByteSource: AnyObject {
+    var size: UInt64 { get }
+    func read(_ at: UInt64, _ n: Int) -> [UInt8]
+}
+
+final class FileByteSource: MKVByteSource {
+    private let fd: Int32
+    let size: UInt64
+    init?(url: URL) {
+        fd = open(url.path, O_RDONLY)
+        guard fd >= 0 else { return nil }
+        var st = stat(); fstat(fd, &st)
+        size = UInt64(st.st_size)
+    }
+    deinit { close(fd) }
+    func read(_ at: UInt64, _ n: Int) -> [UInt8] {
+        guard n > 0, at < size else { return [] }
+        let count = Int(min(UInt64(n), size - at))
+        var out = [UInt8](repeating: 0, count: count)
+        let got = out.withUnsafeMutableBytes { pread(fd, $0.baseAddress, count, off_t(at)) }
+        return got == count ? out : Array(out.prefix(max(0, got)))
+    }
+}
+
 final class MatroskaFile {
     struct Track {
         var number = 0, type = 0
@@ -38,27 +63,21 @@ final class MatroskaFile {
 
     // MARK: Lecture bas niveau
 
-    private let fd: Int32
-    private let fileSize: UInt64
+    private let src: MKVByteSource
+    private var fileSize: UInt64 { src.size }
 
-    init(url: URL) throws {
-        fd = open(url.path, O_RDONLY)
-        guard fd >= 0 else { throw ParseError.damaged }
-        var st = stat()
-        fstat(fd, &st)
-        fileSize = UInt64(st.st_size)
-        guard MatroskaFile.isMatroska(url) else { throw ParseError.notMatroska }
+    convenience init(url: URL) throws {
+        guard MatroskaFile.isMatroska(url), let s = FileByteSource(url: url) else { throw ParseError.notMatroska }
+        try self.init(source: s)
+    }
+
+    init(source: MKVByteSource) throws {
+        src = source
         try parse()
         guard video != nil, !videoBlocks.isEmpty else { throw ParseError.noVideo }
     }
 
-    private func read(_ at: UInt64, _ n: Int) -> [UInt8] {
-        guard n > 0, at < fileSize else { return [] }
-        let count = Int(min(UInt64(n), fileSize - at))
-        var out = [UInt8](repeating: 0, count: count)
-        let got = out.withUnsafeMutableBytes { pread(fd, $0.baseAddress, count, off_t(at)) }
-        return got == count ? out : Array(out.prefix(max(0, got)))
-    }
+    private func read(_ at: UInt64, _ n: Int) -> [UInt8] { src.read(at, n) }
 
     /// Identifiant (marqueur conservé) et taille d'un élément ; taille nil = inconnue.
     private func header(at pos: UInt64) -> (id: UInt32, size: UInt64?, headerLen: Int)? {
@@ -222,10 +241,7 @@ final class MatroskaFile {
 
     /// Octets d'un bloc.
     func data(of block: Block) -> [UInt8]? {
-        var out = [UInt8](repeating: 0, count: block.size)
-        let got = out.withUnsafeMutableBytes { pread(fd, $0.baseAddress, block.size, off_t(block.offset)) }
-        return got == block.size ? out : nil
+        let out = src.read(block.offset, block.size)
+        return out.count == block.size ? out : nil
     }
-
-    deinit { close(fd) }
 }
