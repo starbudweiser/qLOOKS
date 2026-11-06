@@ -17,7 +17,7 @@
 	<dict>
 		<key>NSExtensionAttributes</key>
 		<dict>
-			<key>QLSupportedContentTypes</key><array><string>com.apple.quicktime-movie</string><string>org.matroska.mkv</string><string>io.iina.mkv</string><string>public.svg-image</string><string>com.adobe.encapsulated-postscript</string><string>com.adobe.illustrator.ai-image</string></array>
+			<key>QLSupportedContentTypes</key><array><string>com.apple.quicktime-movie</string><string>org.matroska.mkv</string><string>io.iina.mkv</string><string>public.svg-image</string><string>public.standard-tesselated-geometry-format</string><string>public.geometry-definition-format</string><string>public.polygon-file-format</string><string>com.pixar.universal-scene-description</string><string>com.pixar.universal-scene-description-utf8</string><string>com.pixar.universal-scene-description-binary</string><string>com.pixar.universal-scene-description-mobile</string><string>org.khronos.collada.digital-asset-exchange</string><string>com.apple.scenekit.scene</string><string>public.alembic</string><string>com.preview3mf.3mf-file</string><string>com.shapr3d.3d-manufacturing.3mf</string><string>com.bambulab.3mf</string><string>com.autodesk.mac.3ds</string><string>fr.stephan.qlooks.lwo</string><string>fr.stephan.qlooks.lws</string><string>net.maxon.cinema4d.c4d</string><string>com.adobe.encapsulated-postscript</string><string>com.adobe.illustrator.ai-image</string></array>
 			<key>QLThumbnailMinimumDimension</key><integer>0</integer>
 		</dict>
 		<key>NSExtensionPointIdentifier</key><string>com.apple.quicklook.thumbnail</string>

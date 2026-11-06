@@ -17,6 +17,7 @@ enum L {
     static let tables: [String: [String: String]] = ["fr": fr, "en": en, "es": es, "it": it]
 
     static let fr: [String: String] = [
+        "m3d.tris": "%@ triangles", "m3d.preview": "Aperçu enregistré dans le fichier (Cinema 4D introuvable ou conversion impossible)",
         "gpx.distance": "Distance", "gpx.duration": "Durée", "gpx.moving": "En mouvement", "gpx.speed": "Vitesse moyenne", "gpx.ascent": "Dénivelé +", "gpx.descent": "Dénivelé −", "gpx.altitude": "Altitude", "gpx.points": "Points", "gpx.waypoints": "Points d'intérêt", "gpx.date": "Départ", "gpx.profile": "Profil d'altitude",
         "ap.kind.app": "Application", "ap.kind.bundle": "Paquet", "ap.kind.framework": "Framework", "ap.kind.exe": "Exécutable", "ap.identifier": "Identifiant", "ap.version": "Version", "ap.size": "Taille", "ap.arch": "Architectures", "ap.minos": "macOS minimum", "ap.category": "Catégorie", "ap.copyright": "Copyright", "ap.signature": "Signature", "ap.signed.valid": "Signature valide", "ap.signed.invalid": "Signature invalide", "ap.adhoc": "Signature ad hoc", "ap.unsigned": "Non signé", "ap.notarized": "Notarisée par Apple", "ap.notnotarized": "Non notarisée", "ap.yes": "oui", "ap.no": "non", "ap.developer": "Développeur", "ap.team": "Équipe", "ap.signed.on": "Signée le", "ap.certs": "Chaîne de certificats", "ap.privacy": "Accès demandés", "ap.schemes": "Schémas d'URL", "ap.entitlements": "Droits (entitlements)", "ap.frameworks": "Frameworks", "ap.plugins": "Modules et extensions", "ap.helpers": "Outils et services",
         "tree.dmg": "Image disque : seules les partitions sont listées ; montez l'image pour voir les fichiers.",
@@ -65,6 +66,7 @@ enum L {
     ]
 
     static let en: [String: String] = [
+        "m3d.tris": "%@ triangles", "m3d.preview": "Preview stored in the file (Cinema 4D not found or conversion failed)",
         "gpx.distance": "Distance", "gpx.duration": "Duration", "gpx.moving": "Moving time", "gpx.speed": "Average speed", "gpx.ascent": "Ascent", "gpx.descent": "Descent", "gpx.altitude": "Altitude", "gpx.points": "Points", "gpx.waypoints": "Waypoints", "gpx.date": "Start", "gpx.profile": "Elevation profile",
         "ap.kind.app": "Application", "ap.kind.bundle": "Bundle", "ap.kind.framework": "Framework", "ap.kind.exe": "Executable", "ap.identifier": "Identifier", "ap.version": "Version", "ap.size": "Size", "ap.arch": "Architectures", "ap.minos": "Minimum macOS", "ap.category": "Category", "ap.copyright": "Copyright", "ap.signature": "Signature", "ap.signed.valid": "Valid signature", "ap.signed.invalid": "Invalid signature", "ap.adhoc": "Ad hoc signature", "ap.unsigned": "Unsigned", "ap.notarized": "Notarized by Apple", "ap.notnotarized": "Not notarized", "ap.yes": "yes", "ap.no": "no", "ap.developer": "Developer", "ap.team": "Team", "ap.signed.on": "Signed on", "ap.certs": "Certificate chain", "ap.privacy": "Requested access", "ap.schemes": "URL schemes", "ap.entitlements": "Entitlements", "ap.frameworks": "Frameworks", "ap.plugins": "Plug-ins and extensions", "ap.helpers": "Helpers and services",
         "tree.dmg": "Disk image: only partitions are listed; mount the image to see its files.",
@@ -113,6 +115,7 @@ enum L {
     ]
 
     static let es: [String: String] = [
+        "m3d.tris": "%@ triángulos", "m3d.preview": "Vista previa guardada en el archivo (Cinema 4D no encontrado o conversión imposible)",
         "gpx.distance": "Distancia", "gpx.duration": "Duración", "gpx.moving": "En movimiento", "gpx.speed": "Velocidad media", "gpx.ascent": "Desnivel +", "gpx.descent": "Desnivel −", "gpx.altitude": "Altitud", "gpx.points": "Puntos", "gpx.waypoints": "Puntos de interés", "gpx.date": "Salida", "gpx.profile": "Perfil de altitud",
         "ap.kind.app": "Aplicación", "ap.kind.bundle": "Paquete", "ap.kind.framework": "Framework", "ap.kind.exe": "Ejecutable", "ap.identifier": "Identificador", "ap.version": "Versión", "ap.size": "Tamaño", "ap.arch": "Arquitecturas", "ap.minos": "macOS mínimo", "ap.category": "Categoría", "ap.copyright": "Copyright", "ap.signature": "Firma", "ap.signed.valid": "Firma válida", "ap.signed.invalid": "Firma no válida", "ap.adhoc": "Firma ad hoc", "ap.unsigned": "Sin firmar", "ap.notarized": "Notarizada por Apple", "ap.notnotarized": "No notarizada", "ap.yes": "sí", "ap.no": "no", "ap.developer": "Desarrollador", "ap.team": "Equipo", "ap.signed.on": "Firmada el", "ap.certs": "Cadena de certificados", "ap.privacy": "Accesos solicitados", "ap.schemes": "Esquemas de URL", "ap.entitlements": "Permisos (entitlements)", "ap.frameworks": "Frameworks", "ap.plugins": "Módulos y extensiones", "ap.helpers": "Herramientas y servicios",
         "tree.dmg": "Imagen de disco: solo se listan las particiones; monte la imagen para ver los archivos.",
@@ -161,6 +164,7 @@ enum L {
     ]
 
     static let it: [String: String] = [
+        "m3d.tris": "%@ triangoli", "m3d.preview": "Anteprima salvata nel file (Cinema 4D non trovato o conversione impossibile)",
         "gpx.distance": "Distanza", "gpx.duration": "Durata", "gpx.moving": "In movimento", "gpx.speed": "Velocità media", "gpx.ascent": "Dislivello +", "gpx.descent": "Dislivello −", "gpx.altitude": "Altitudine", "gpx.points": "Punti", "gpx.waypoints": "Punti di interesse", "gpx.date": "Partenza", "gpx.profile": "Profilo altimetrico",
         "ap.kind.app": "Applicazione", "ap.kind.bundle": "Pacchetto", "ap.kind.framework": "Framework", "ap.kind.exe": "Eseguibile", "ap.identifier": "Identificatore", "ap.version": "Versione", "ap.size": "Dimensione", "ap.arch": "Architetture", "ap.minos": "macOS minimo", "ap.category": "Categoria", "ap.copyright": "Copyright", "ap.signature": "Firma", "ap.signed.valid": "Firma valida", "ap.signed.invalid": "Firma non valida", "ap.adhoc": "Firma ad hoc", "ap.unsigned": "Non firmato", "ap.notarized": "Notarizzata da Apple", "ap.notnotarized": "Non notarizzata", "ap.yes": "sì", "ap.no": "no", "ap.developer": "Sviluppatore", "ap.team": "Team", "ap.signed.on": "Firmata il", "ap.certs": "Catena di certificati", "ap.privacy": "Accessi richiesti", "ap.schemes": "Schemi URL", "ap.entitlements": "Autorizzazioni (entitlements)", "ap.frameworks": "Framework", "ap.plugins": "Moduli ed estensioni", "ap.helpers": "Strumenti e servizi",
         "tree.dmg": "Immagine disco: sono elencate solo le partizioni; monta l'immagine per vedere i file.",

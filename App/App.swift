@@ -29,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Socle.brand("qLOOKS", color: Brand.color)
         Socle.apply()
         Extensions.shared.refresh()
+        C4D.installScript()
         DispatchQueue.main.async {
             NSApp.windows.first { $0.identifier?.rawValue.contains("main") == true || $0.title == "qLOOKS" }?.socleCenter()
         }

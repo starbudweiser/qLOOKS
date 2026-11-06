@@ -17,5 +17,11 @@
 	<key>LSMinimumSystemVersion</key><string>15.0</string>
 	<key>NSHighResolutionCapable</key><true/>
 	<key>NSPrincipalClass</key><string>NSApplication</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict><key>UTTypeIdentifier</key><string>fr.stephan.qlooks.lwo</string><key>UTTypeDescription</key><string>LightWave Object</string><key>UTTypeConformsTo</key><array><string>public.data</string><string>public.3d-content</string></array><key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>lwo</string></array></dict></dict>
+		<dict><key>UTTypeIdentifier</key><string>fr.stephan.qlooks.lws</string><key>UTTypeDescription</key><string>LightWave Scene</string><key>UTTypeConformsTo</key><array><string>public.data</string><string>public.3d-content</string></array><key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>lws</string></array></dict></dict>
+		<dict><key>UTTypeIdentifier</key><string>fr.stephan.qlooks.max</string><key>UTTypeDescription</key><string>3ds Max Scene</string><key>UTTypeConformsTo</key><array><string>public.data</string><string>public.3d-content</string></array><key>UTTypeTagSpecification</key><dict><key>public.filename-extension</key><array><string>max</string></array></dict></dict>
+	</array>
 </dict>
 </plist>

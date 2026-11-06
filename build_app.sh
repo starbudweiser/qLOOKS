@@ -31,8 +31,8 @@ build_ext() {
   if [ "$name" = Preview ]; then mkdir -p "$ext/Contents/Resources" && cp -R Resources/web "$ext/Contents/Resources/web"; fi
   SIGN_ENTITLEMENTS="$PWD/Resources/Extension.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$ext"
 }
-build_ext Preview QuickLookUI -framework WebKit Preview/*.swift
-build_ext Thumbnail QuickLookThumbnailing Thumbnail/*.swift
+build_ext Preview QuickLookUI -framework WebKit -framework SceneKit Preview/*.swift
+build_ext Thumbnail QuickLookThumbnailing -framework SceneKit -framework Metal Thumbnail/*.swift
 
 # Décodeur vidéo (MediaExtension, ExtensionKit) : PNG et Animation pour tout macOS. Exige le profil de provisionnement.
 if [ -f Resources/Decoder.provisionprofile ]; then

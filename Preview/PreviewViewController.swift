@@ -21,6 +21,21 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
+        if Model3D.handles(url) {
+            Task { @MainActor in
+                guard let loaded = await Model3D.load(url) else { handler(FrameError.unreadable); return }
+                if loaded.root != nil {
+                    self.embed(ModelView(loaded: loaded))
+                    self.preferredContentSize = CGSize(width: 760, height: 580)
+                } else if let img = loaded.preview {
+                    let v = NSImageView(image: img); v.imageScaling = .scaleProportionallyUpOrDown
+                    self.embed(v)
+                    self.preferredContentSize = Self.fitted(img.size, extra: 0)
+                } else { handler(FrameError.unreadable); return }
+                handler(nil)
+            }
+            return
+        }
         if url.pathExtension.lowercased() == "gpx" {
             Task {
                 guard let page = await GPX.html(for: url) else { handler(FrameError.unreadable); return }
