@@ -15,6 +15,8 @@ protocol FrameSource: AnyObject, Sendable {
     func frame(_ index: Int) throws -> CGImage
     /// Contenu prêt pour un calque : image CPU, ou surface IOSurface décodée sur le GPU (aucune copie).
     func displayContents(_ index: Int) throws -> Any
+    /// Image approchée, très rapide (image clé la plus proche), pour suivre le curseur de la barre de temps ; nil si la source n'en a pas besoin.
+    func quickFrame(_ index: Int) -> Any?
 }
 
 /// Image décodée dans une surface partagée avec le GPU : le calque l'affiche sans copie ; le tampon reste retenu tant que l'image est en cache.
@@ -28,6 +30,7 @@ final class GPUFrame {
 }
 
 extension FrameSource {
+    func quickFrame(_ index: Int) -> Any? { nil }
     func displayContents(_ index: Int) throws -> Any { try frame(index) }
 }
 
@@ -215,6 +218,15 @@ final class AVSource: FrameSource, @unchecked Sendable {
         let pb = try nextBuffer(index)
         if let g = GPUFrame(pb) { return g }
         return try image(from: pb)
+    }
+
+    func quickFrame(_ index: Int) -> Any? {
+        let g = AVAssetImageGenerator(asset: asset)
+        g.appliesPreferredTrackTransform = true
+        g.requestedTimeToleranceBefore = .positiveInfinity
+        g.requestedTimeToleranceAfter = .positiveInfinity
+        g.maximumSize = CGSize(width: 1280, height: 1280)
+        return try? g.copyCGImage(at: CMTime(seconds: Double(max(0, index)) * frameDuration, preferredTimescale: 600_000), actualTime: nil)
     }
 
     private func image(from pb: CVPixelBuffer) throws -> CGImage {

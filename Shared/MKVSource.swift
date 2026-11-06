@@ -77,7 +77,7 @@ final class MKVSource: FrameSource, @unchecked Sendable {
     }
 
     private func startSession() throws {
-        if let s = session { VTDecompressionSessionInvalidate(s); session = nil }
+        if session != nil { return }                       // la session (et son décodeur matériel) est conservée d'une recherche à l'autre
         var s: VTDecompressionSession?
         let attrs: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
                                     kCVPixelBufferIOSurfacePropertiesKey as String: [String: Any](),
@@ -130,13 +130,21 @@ final class MKVSource: FrameSource, @unchecked Sendable {
         return try image(pb)
     }
 
+    /// Image clé la plus proche : un seul groupe d'images à décoder, donc immédiat même dans un long plan.
+    func quickFrame(_ index: Int) -> Any? {
+        let i = max(0, min(index, frameCount - 1))
+        let k = keyIndex(atOrBefore: order[i])
+        guard let r = order.firstIndex(of: k), let pb = try? buffer(r, margin: 3) else { return nil }
+        return GPUFrame(pb) ?? (try? image(pb)) as Any?
+    }
+
     func displayContents(_ index: Int) throws -> Any {
         let pb = try buffer(index)
         if let g = GPUFrame(pb) { return g }
         return try image(pb)
     }
 
-    private func buffer(_ index: Int) throws -> CVPixelBuffer {
+    private func buffer(_ index: Int, margin: Int = 8) throws -> CVPixelBuffer {
         lock.lock(); defer { lock.unlock() }
         let i = max(0, min(index, frameCount - 1))
         let j = order[i]
@@ -147,7 +155,7 @@ final class MKVSource: FrameSource, @unchecked Sendable {
             decoded.removeAll()
             nextFeed = keyIndex(atOrBefore: j)
         }
-        let target = min(blocks.count - 1, j + 8)           // marge pour les images réordonnées (B)
+        let target = min(blocks.count - 1, j + margin)           // marge pour les images réordonnées (B)
         guard let session else { throw FrameError.unreadable }
         while nextFeed <= target {
             let k = nextFeed

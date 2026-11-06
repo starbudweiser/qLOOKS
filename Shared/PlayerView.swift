@@ -14,6 +14,7 @@ final class AlphaPlayerView: NSView {
     private let backdropControl = NSSegmentedControl()
 
     private let decodeQueue = OperationQueue()
+    private let scrubQueue: OperationQueue = { let q = OperationQueue(); q.maxConcurrentOperationCount = 1; q.qualityOfService = .userInteractive; return q }()
     private var cache: [Int: Any] = [:]
     private var inFlight = Set<Int>()
     private var current = -1          // image affichée
@@ -208,7 +209,23 @@ final class AlphaPlayerView: NSView {
         if playing { pause() }
         target = i
         updateTime()
-        request(i)
+        // Pendant le glissement : on abandonne les calculs en retard et on montre l'image clé la plus proche ; image exacte au relâchement.
+        generation += 1
+        decodeQueue.cancelAllOperations()
+        inFlight.removeAll()
+        let released = NSApp.currentEvent?.type == .leftMouseUp
+        if released || source.randomAccess { request(i); return }
+        let gen = generation, src = source
+        scrubQueue.cancelAllOperations()
+        scrubQueue.addOperation { [weak self] in
+            let quick = src.quickFrame(i)
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard let self, gen == self.generation else { return }
+                    if let quick { self.show(i, quick) } else { self.request(i) }
+                }
+            }
+        }
     }
 
     private func tick() {
