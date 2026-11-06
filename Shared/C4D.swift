@@ -10,6 +10,12 @@ enum C4D {
     static let previewBundleID = "fr.stephan.alphalook.preview"
 
     /// Dossier des scripts de l'extension d'aperçu (côté appli : on le crée ; côté extension : le système le fournit).
+    /// Dossiers de scripts essayés : celui de l'extension, puis celui de l'appli.
+    static var candidateDirectories: [URL] {
+        let base = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Scripts")
+        return [scriptsDirectory, base.appendingPathComponent("fr.stephan.alphalook")]
+    }
+
     static var scriptsDirectory: URL {
         if let u = try? FileManager.default.url(for: .applicationScriptsDirectory, in: .userDomainMask, appropriateFor: nil, create: false),
            u.path.hasSuffix(previewBundleID) { return u }
@@ -50,15 +56,17 @@ enum C4D {
     /// Appli : installe (ou met à jour) le script et dit si Cinema 4D est présent.
     @discardableResult
     static func installScript() -> Bool {
-        let dir = scriptsDirectory
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let url = dir.appendingPathComponent(scriptName)
-        let clean = script.split(separator: "\n", omittingEmptySubsequences: false).map { $0.hasPrefix("    ") ? String($0.dropFirst(4)) : String($0) }.joined(separator: "\n")
-        if (try? String(contentsOf: url, encoding: .utf8)) != clean {
-            guard (try? clean.write(to: url, atomically: true, encoding: .utf8)) != nil else { return false }
+        let clean = script
+        var ok = true
+        for dir in candidateDirectories {
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            let url = dir.appendingPathComponent(scriptName)
+            if (try? String(contentsOf: url, encoding: .utf8)) != clean {
+                if (try? clean.write(to: url, atomically: true, encoding: .utf8)) == nil { ok = false }
+            }
+            try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
         }
-        try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: url.path)
-        return true
+        return ok
     }
 
     /// Cinema 4D installé ? (utilisé par l'appli ; l'extension, confinée, n'a pas besoin de le savoir : le script le cherche.)
@@ -79,30 +87,38 @@ enum C4D {
 
     static func load(_ url: URL) async -> Result {
         var r = Result()
-        if let (node, tri) = await convert(url) { r.root = node; r.triangles = tri; return r }
+        let (res, why) = await convert(url)
+        if let (node, tri) = res { r.root = node; r.triangles = tri; return r }
         r.preview = embeddedPreview(url)
-        r.note = "preview"
+        r.note = why
         return r
     }
 
     /// Conversion par le script (hors bac à sable).
-    private static func convert(_ url: URL) async -> (SCNNode, Int)? {
-        let script = scriptsDirectory.appendingPathComponent(scriptName)
-        guard FileManager.default.fileExists(atPath: script.path), let task = try? NSUserUnixTask(url: script) else { return nil }
+    private static func convert(_ url: URL) async -> ((SCNNode, Int)?, String) {
+        var task: NSUserUnixTask?
+        var why = ""
+        for dir in candidateDirectories {
+            let script = dir.appendingPathComponent(scriptName)
+            do { task = try NSUserUnixTask(url: script); break } catch { why += "\(dir.lastPathComponent): \(error.localizedDescription) · " }
+        }
+        guard let task else { return (nil, why) }
         let out = FileManager.default.temporaryDirectory.appendingPathComponent("c4d-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: out) }
         try? FileManager.default.createDirectory(at: out, withIntermediateDirectories: true)
-        let ok: Bool = await withCheckedContinuation { cont in
-            task.execute(withArguments: [url.path, out.path]) { err in cont.resume(returning: err == nil) }
+        let err: Error? = await withCheckedContinuation { cont in
+            task.execute(withArguments: [url.path, out.path]) { e in cont.resume(returning: e) }
         }
+        if let err { return (nil, "script : \(err.localizedDescription)") }
         let obj = out.appendingPathComponent("model.obj")
-        guard ok, FileManager.default.fileExists(atPath: obj.path), let scene = try? SCNScene(url: obj, options: [.checkConsistency: false]) else { return nil }
+        guard FileManager.default.fileExists(atPath: obj.path) else { return (nil, "OBJ absent (conversion échouée)") }
+        guard let scene = try? SCNScene(url: obj, options: [.checkConsistency: false]) else { return (nil, "OBJ illisible") }
         var n = 0
         scene.rootNode.enumerateHierarchy { node, _ in
             for el in node.geometry?.elements ?? [] { n += el.primitiveCount }
             for m in node.geometry?.materials ?? [] where m.diffuse.contents == nil { m.diffuse.contents = NSColor(white: 0.78, alpha: 1) }
         }
-        return n > 0 ? (scene.rootNode, n) : nil
+        return n > 0 ? ((scene.rootNode, n), "") : (nil, "OBJ vide")
     }
 
     /// Image d'aperçu enregistrée dans le fichier (JPEG près du début).

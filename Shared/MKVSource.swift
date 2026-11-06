@@ -79,7 +79,9 @@ final class MKVSource: FrameSource, @unchecked Sendable {
     private func startSession() throws {
         if let s = session { VTDecompressionSessionInvalidate(s); session = nil }
         var s: VTDecompressionSession?
-        let attrs: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+        let attrs: [String: Any] = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+                                    kCVPixelBufferIOSurfacePropertiesKey as String: [String: Any](),
+                                    kCVPixelBufferMetalCompatibilityKey as String: true]
         let st = VTDecompressionSessionCreate(allocator: nil, formatDescription: format!, decoderSpecification: nil,
                                               imageBufferAttributes: attrs as CFDictionary, outputCallback: nil, decompressionSessionOut: &s)
         guard st == noErr, let s else { throw FrameError.unsupported(codecName) }
@@ -124,10 +126,21 @@ final class MKVSource: FrameSource, @unchecked Sendable {
     // MARK: Lecture d'une image
 
     func frame(_ index: Int) throws -> CGImage {
+        let pb = try buffer(index)
+        return try image(pb)
+    }
+
+    func displayContents(_ index: Int) throws -> Any {
+        let pb = try buffer(index)
+        if let g = GPUFrame(pb) { return g }
+        return try image(pb)
+    }
+
+    private func buffer(_ index: Int) throws -> CVPixelBuffer {
         lock.lock(); defer { lock.unlock() }
         let i = max(0, min(index, frameCount - 1))
         let j = order[i]
-        if let pb = decoded[j] { return try image(pb) }
+        if let pb = decoded[j] { return pb }
 
         if session == nil || j < nextFeed - 24 || j > nextFeed + 90 || (j < nextFeed && decoded[j] == nil) {
             try startSession()
@@ -153,7 +166,7 @@ final class MKVSource: FrameSource, @unchecked Sendable {
         let keep = Set(order[max(0, i - 1)..<min(frameCount, i + 14)])
         for k in decoded.keys where !keep.contains(k) { decoded[k] = nil }
         guard let pb = decoded[j] else { throw FrameError.unreadable }
-        return try image(pb)
+        return pb
     }
 
     private let storeLock = NSLock()

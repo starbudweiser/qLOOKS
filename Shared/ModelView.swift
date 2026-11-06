@@ -33,6 +33,7 @@ final class ModelView: NSView {
             let scene = Model3D.scene(for: root)
             scn.scene = scene
             scn.allowsCameraControl = true
+            scn.preferredFramesPerSecond = 60
             scn.antialiasingMode = .multisampling4X
             scn.backgroundColor = NSColor(srgbRed: 0.118, green: 0.118, blue: 0.118, alpha: 1)
             if let holder = scene.rootNode.childNodes.first {

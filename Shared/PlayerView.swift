@@ -14,7 +14,7 @@ final class AlphaPlayerView: NSView {
     private let backdropControl = NSSegmentedControl()
 
     private let decodeQueue = OperationQueue()
-    private var cache: [Int: CGImage] = [:]
+    private var cache: [Int: Any] = [:]
     private var inFlight = Set<Int>()
     private var current = -1          // image affichée
     private var target = 0            // image voulue
@@ -246,7 +246,7 @@ final class AlphaPlayerView: NSView {
             inFlight.insert(j)
             let gen = generation, src = source
             decodeQueue.addOperation { [weak self] in
-                let img = try? src.frame(j)
+                let img = try? src.displayContents(j)
                 DispatchQueue.main.async {
                     MainActor.assumeIsolated {
                         guard let self, gen == self.generation else { return }
@@ -260,7 +260,7 @@ final class AlphaPlayerView: NSView {
         }
     }
 
-    private func show(_ i: Int, _ img: CGImage) {
+    private func show(_ i: Int, _ img: Any) {
         current = i
         canvas.image = img
     }
@@ -273,10 +273,11 @@ final class CanvasView: NSView {
     var onClick: (() -> Void)?
     var videoSize: CGSize = .zero { didSet { needsLayout = true; needsDisplay = true } }
     var backdrop: Backdrop = .checker { didSet { needsDisplay = true } }
-    var image: CGImage? {
+    /// CGImage, ou image GPU (IOSurface) affichée sans copie.
+    var image: Any? {
         didSet {
             CATransaction.begin(); CATransaction.setDisableActions(true)
-            imageLayer.contents = image
+            if let g = image as? GPUFrame { imageLayer.contents = g.surface } else { imageLayer.contents = image }
             CATransaction.commit()
         }
     }

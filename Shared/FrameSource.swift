@@ -13,6 +13,22 @@ protocol FrameSource: AnyObject, Sendable {
     var randomAccess: Bool { get }
     var codecName: String { get }
     func frame(_ index: Int) throws -> CGImage
+    /// Contenu prêt pour un calque : image CPU, ou surface IOSurface décodée sur le GPU (aucune copie).
+    func displayContents(_ index: Int) throws -> Any
+}
+
+/// Image décodée dans une surface partagée avec le GPU : le calque l'affiche sans copie ; le tampon reste retenu tant que l'image est en cache.
+final class GPUFrame {
+    let buffer: CVPixelBuffer
+    let surface: IOSurface
+    init?(_ pb: CVPixelBuffer) {
+        guard let s = CVPixelBufferGetIOSurface(pb)?.takeUnretainedValue() else { return nil }
+        buffer = pb; surface = s
+    }
+}
+
+extension FrameSource {
+    func displayContents(_ index: Int) throws -> Any { try frame(index) }
 }
 
 enum FrameError: LocalizedError {
@@ -173,7 +189,9 @@ final class AVSource: FrameSource, @unchecked Sendable {
         let r = try AVAssetReader(asset: asset)
         let start = CMTime(seconds: Double(index) * frameDuration, preferredTimescale: 600_000)
         r.timeRange = CMTimeRange(start: start, duration: .positiveInfinity)
-        let o = AVAssetReaderTrackOutput(track: track, outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA])
+        let o = AVAssetReaderTrackOutput(track: track, outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+                                                                                                  kCVPixelBufferIOSurfacePropertiesKey as String: [String: Any](),
+                                                                                                  kCVPixelBufferMetalCompatibilityKey as String: true])
         o.alwaysCopiesSampleData = false
         guard r.canAdd(o) else { throw FrameError.unreadable }
         r.add(o)
@@ -181,7 +199,7 @@ final class AVSource: FrameSource, @unchecked Sendable {
         reader = r; output = o; next = index
     }
 
-    func frame(_ index: Int) throws -> CGImage {
+    private func nextBuffer(_ index: Int) throws -> CVPixelBuffer {
         lock.lock(); defer { lock.unlock() }
         let i = max(0, min(index, frameCount - 1))
         if i != next || reader == nil { try restart(at: i) }
@@ -190,6 +208,24 @@ final class AVSource: FrameSource, @unchecked Sendable {
             throw FrameError.unreadable
         }
         next = i + 1
+        return pb
+    }
+
+    func displayContents(_ index: Int) throws -> Any {
+        let pb = try nextBuffer(index)
+        if let g = GPUFrame(pb) { return g }
+        return try image(from: pb)
+    }
+
+    private func image(from pb: CVPixelBuffer) throws -> CGImage {
+        var img: CGImage?
+        VTCreateCGImageFromCVPixelBuffer(pb, options: nil, imageOut: &img)
+        guard let img else { throw FrameError.unreadable }
+        return img
+    }
+
+    func frame(_ index: Int) throws -> CGImage {
+        let pb = try nextBuffer(index)
         var img: CGImage?
         VTCreateCGImageFromCVPixelBuffer(pb, options: nil, imageOut: &img)
         guard let img else { throw FrameError.unreadable }
