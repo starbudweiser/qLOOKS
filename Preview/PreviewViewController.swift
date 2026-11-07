@@ -30,13 +30,6 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
                 } else if let img = loaded.preview {
                     let v = NSImageView(image: img); v.imageScaling = .scaleProportionallyUpOrDown
                     self.embed(v)
-                    if let n = loaded.note, !n.isEmpty, n != "preview" {
-                        let l = NSTextField(labelWithString: L.t("m3d.preview") + " — " + n)
-                        l.font = .systemFont(ofSize: 10); l.textColor = .white; l.drawsBackground = true; l.backgroundColor = NSColor(white: 0, alpha: 0.6)
-                        l.translatesAutoresizingMaskIntoConstraints = false
-                        self.view.addSubview(l)
-                        NSLayoutConstraint.activate([l.leadingAnchor.constraint(equalTo: self.view.leadingAnchor), l.bottomAnchor.constraint(equalTo: self.view.bottomAnchor), l.trailingAnchor.constraint(lessThanOrEqualTo: self.view.trailingAnchor)])
-                    }
                     self.preferredContentSize = Self.fitted(img.size, extra: 0)
                 } else { handler(FrameError.unreadable); return }
                 handler(nil)
