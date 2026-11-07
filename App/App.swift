@@ -14,7 +14,7 @@ struct AlphaLookApp: App {
         Window("qLOOKS", id: "main") {
             ContentView()
         }
-        .defaultSize(width: 776, height: 980)
+        .defaultSize(width: 940, height: 660)
         .commands {
             CommandGroup(replacing: .appInfo) { Button(L.t("menu.about")) { About.show() } }
             CommandGroup(replacing: .newItem) {}

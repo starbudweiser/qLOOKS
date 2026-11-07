@@ -10,24 +10,74 @@ struct ContentView: View {
     @State private var dropHover = false
     @ObservedObject private var ext = Extensions.shared
 
+    enum Page: String, CaseIterable, Identifiable {
+        case settings, formats, trial, updates
+        var id: String { rawValue }
+        var symbol: String { ["settings": "slider.horizontal.3", "formats": "square.grid.2x2", "trial": "play.rectangle", "updates": "arrow.down.circle"][rawValue] ?? "circle" }
+        var titleKey: String { "nav." + rawValue }
+    }
+    @State private var page: Page = .settings
+    @ObservedObject private var updater = Updater.shared
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Socle.M.space4) {
-                VStack(alignment: .leading, spacing: Socle.M.space1) {
-                    Text(branded: "qLOOKS").socle(Socle.T.display).foregroundStyle(Socle.C.textStrong)
-                    Text(L.t("app.tagline")).socle(Socle.T.body).foregroundStyle(Socle.C.textMuted)
+        HStack(spacing: 0) {
+            sidebar
+            Rectangle().fill(Socle.C.border).frame(width: 1)
+            ScrollView {
+                VStack(alignment: .leading, spacing: Socle.M.space4) {
+                    switch page {
+                    case .settings: previewCard; extensionsCard
+                    case .formats: FormatsPage()
+                    case .trial: tryCard
+                    case .updates: Card(title: L.t("upd.title")) { UpdateSection() }
+                    }
                 }
-                previewCard
-                extensionsCard
-                tryCard
-                Card(title: L.t("upd.title")) { UpdateSection() }
+                .frame(maxWidth: 680, alignment: .leading)
+                .padding(Socle.M.space6)
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: 720)
-            .padding(28)
-            .frame(maxWidth: .infinity)
         }
         .background(Socle.C.bg)
-        .frame(minWidth: 620, minHeight: 560)
+        .frame(minWidth: 780, minHeight: 560)
+    }
+
+    private var updateAvailable: Bool { if case .available = updater.state { return true }; return false }
+
+    private var sidebar: some View {
+        VStack(alignment: .leading, spacing: Socle.M.space1) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(branded: "qLOOKS").socle(Socle.T.title).foregroundStyle(Socle.C.textStrong)
+                Text(L.t("app.short")).socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle).lineLimit(2)
+            }
+            .padding(.horizontal, Socle.M.space3).padding(.top, Socle.M.space4).padding(.bottom, Socle.M.space4)
+            ForEach(Page.allCases) { p in
+                Button { page = p } label: {
+                    HStack(spacing: Socle.M.space2) {
+                        Image(systemName: p.symbol).frame(width: 18)
+                        Text(L.t(p.titleKey)).socle(Socle.T.body)
+                        Spacer(minLength: 0)
+                        if p == .updates, updateAvailable { Circle().fill(Socle.C.accent).frame(width: 8, height: 8) }
+                    }
+                    .foregroundStyle(page == p ? Socle.C.accentText : Socle.C.text)
+                    .padding(.horizontal, Socle.M.space3).frame(height: Socle.M.sizeControl)
+                    .background(RoundedRectangle(cornerRadius: Socle.M.radiusMd).fill(page == p ? Socle.C.surface : Color.clear))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+            Spacer()
+            VStack(alignment: .leading, spacing: 2) {
+                Text(L.t("upd.version", updater.currentVersion)).socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle)
+                if updateAvailable, case .available(let v) = updater.state {
+                    Button(L.t("upd.install", v)) { Task { await updater.install() } }
+                        .buttonStyle(SocleButtonStyle(.primary, height: Socle.M.sizeControl)).lineLimit(1)
+                }
+            }
+            .padding(Socle.M.space3)
+        }
+        .padding(.horizontal, Socle.M.space2)
+        .frame(width: 210)
+        .background(Socle.C.bgSunken)
     }
 
     private var previewCard: some View {
@@ -244,5 +294,69 @@ struct UpdateSection: View {
             }
             Hint(status)
         }
+    }
+}
+
+
+/// Page « Formats » : tout ce qui est pris en charge, version par version, avec recherche.
+struct FormatsPage: View {
+    @State private var version = Formats.versions.last ?? "1.0.0"
+    @State private var query = ""
+
+    private var entries: [FormatEntry] {
+        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+        return Formats.supported(in: version).filter {
+            q.isEmpty || $0.name.lowercased().contains(q) || $0.exts.contains { $0.contains(q.hasPrefix(".") ? String(q.dropFirst()) : q) }
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Socle.M.space4) {
+            Card(title: L.t("fm.title"), subtitle: L.t("fm.sub")) {
+                HStack(spacing: Socle.M.space3) {
+                    Text(L.t("fm.version")).socle(Socle.T.label).foregroundStyle(Socle.C.textMuted)
+                    SocleSegmented(options: Formats.versions, selection: version, label: { $0 }) { version = $0 }
+                    Spacer(minLength: Socle.M.space2)
+                    Text(L.t("fm.count", entries.count)).socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle)
+                }
+                TextField(L.t("fm.search"), text: $query).textFieldStyle(.plain).socleField()
+            }
+            ForEach(FormatCategory.allCases) { cat in
+                let list = entries.filter { $0.category == cat }
+                if !list.isEmpty {
+                    Card(title: L.t(cat.titleKey)) {
+                        VStack(spacing: 0) {
+                            ForEach(Array(list.enumerated()), id: \.element.id) { i, e in
+                                if i > 0 { Rectangle().fill(Socle.C.border).frame(height: 1) }
+                                FormatRow(entry: e, version: version)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct FormatRow: View {
+    let entry: FormatEntry
+    let version: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: Socle.M.space2) {
+                Text(entry.name).socle(Socle.T.body).foregroundStyle(Socle.C.text)
+                if Formats.isNew(entry, in: version), version != Formats.versions.first { SocleChip(text: L.t("fm.new")) }
+                Spacer(minLength: Socle.M.space2)
+                if entry.preview { SocleChip(text: L.t("fm.preview")) }
+                if entry.thumbnail { SocleChip(text: L.t("fm.thumb")) }
+            }
+            if !entry.exts.isEmpty {
+                Text(entry.exts.map { "." + $0 }.joined(separator: "  ")).socle(Socle.T.meta).foregroundStyle(Socle.C.textSubtle).lineLimit(2)
+            }
+            if let n = entry.noteKey { Text(L.t(n)).socle(Socle.T.meta).foregroundStyle(Socle.C.textMuted) }
+        }
+        .padding(.vertical, Socle.M.space2)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
