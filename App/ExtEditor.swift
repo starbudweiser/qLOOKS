@@ -2,23 +2,15 @@
 import SwiftUI
 import Security
 
-enum ExtKind: String, CaseIterable, Identifiable {
-    case quicklook, thumbnail, action, share, finderSync, camera, endpoint, safari, widget, media
+enum FormatScope: String, CaseIterable, Identifiable {
+    case both, preview, thumb
     var id: String { rawValue }
-    var labelKey: String { "ee.k." + rawValue }
-    /// Nom technique donné à l'agent (point d'extension Apple).
+    var labelKey: String { "ee.s." + rawValue }
     var technical: String {
         switch self {
-        case .quicklook: return "Quick Look Preview Extension (QLPreviewingController, com.apple.quicklook.preview)"
-        case .thumbnail: return "Quick Look Thumbnail Extension (QLThumbnailProvider, com.apple.quicklook.thumbnail)"
-        case .action: return "Finder Quick Action / Action extension (Automator-free, App Extension com.apple.services or com.apple.ui-services)"
-        case .share: return "Share Extension (com.apple.share-services)"
-        case .finderSync: return "Finder Sync Extension (FIFinderSync, com.apple.FinderSync)"
-        case .camera: return "Camera Extension (CoreMediaIO system extension, CMIOExtension)"
-        case .endpoint: return "Endpoint Security system extension (EndpointSecurity.framework, com.apple.system_extension.endpoint_security)"
-        case .safari: return "Safari Web Extension (com.apple.Safari.web-extension)"
-        case .widget: return "WidgetKit extension (com.apple.widgetkit-extension)"
-        case .media: return "MediaExtension (decoder / format reader, VideoToolbox / MediaToolbox)"
+        case .both: return "both the Quick Look preview (spacebar) and the Finder thumbnail"
+        case .preview: return "the Quick Look preview (spacebar) only"
+        case .thumb: return "the Finder thumbnail only"
         }
     }
 }
@@ -55,49 +47,49 @@ final class ExtBuilder: ObservableObject {
     private var process: Process?
     private var task: Task<Void, Never>?
 
-    static var root: URL {
-        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("qLOOKS Extensions")
+    static var outDir: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("qLOOKS Formats")
     }
+    static let defaultSource = "/Volumes/OWC 6To/TAF/DEV/qLOOKS"
 
-    static func prompt(kind: ExtKind, name: String, brief: String, dir: URL) -> String {
+    static func prompt(scope: FormatScope, format: String, exts: String, sample: String, brief: String, src: String) -> String {
         """
-        Create a complete macOS extension project in the current folder (\(dir.path)).
+        You are working on qLOOKS (macOS app, source in \(src)): one QuickLook app whose Preview extension, Thumbnail extension and MediaExtension add file formats macOS cannot display. Read CLAUDE.md / README and the existing format handlers in Shared/ first, and follow the same patterns.
 
-        Extension type: \(kind.technical)
-        Name: \(name)
-        Team ID: 35KLMK53PN (Developer ID signing; bundle IDs in the form fr.stephan.<name>).
+        Task: add support for the file format "\(format)" (extensions: \(exts)) for \(scope.technical).
+        \(sample.isEmpty ? "No sample file was given: find or write test files yourself." : "Sample file: \(sample)")
 
-        What it must do (written by the user, possibly in French):
+        What the preview must show (written by the user, possibly in French):
         \(brief)
 
-        Requirements:
-        - Native Swift, no third-party dependency, a host app that registers/enables the extension, Info.plist and entitlements for the extension point, minimum macOS 14.
-        - A build script (build.sh) that compiles with swiftc/xcodebuild, signs with the Developer ID certificate and installs to ~/Applications/Applications Personnelles.
-        - Interface texts in 4 languages (French first, English, Spanish, Italian), same keys in every table.
-        - Short README explaining how to enable the extension in System Settings.
-        - Build it and fix compile errors before finishing; report what works and what needs a manual step.
+        Steps:
+        1. Declare the file extensions / UTIs in Resources/Preview-Info.plist and/or Resources/Thumbnail-Info.plist (QLSupportedContentTypes), exporting a UTI in Resources/Info.plist if the system has none.
+        2. Write the parser/renderer in Shared/ (native Swift, no dependency, sandbox-safe), then dispatch to it from Preview/PreviewViewController.swift and/or Thumbnail/ThumbnailProvider.swift.
+        3. Register it in App/Formats.swift (FormatEntry with the next version; bump the version in Resources/Info.plist) and add every new text to Shared/L10n.swift in the 4 languages (fr, en, es, it).
+        4. Test with a headless harness, run ./build_app.sh (builds, signs, installs, registers the extensions), and fix errors.
+        5. Commit in French and push to main. Report what works and any limit.
         """
     }
 
     static func slug(_ s: String) -> String {
         let t = s.lowercased().map { $0.isLetter || $0.isNumber ? String($0) : "-" }.joined()
         let r = t.split(separator: "-").joined(separator: "-")
-        return r.isEmpty ? "extension" : r
+        return r.isEmpty ? "format" : r
     }
 
-    func start(kind: ExtKind, name: String, brief: String, agent: AgentKind) {
+    func start(prompt: String, name: String, src: String, agent: AgentKind) {
         guard !running else { return }
-        let dir = Self.root.appendingPathComponent(Self.slug(name))
-        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        let prompt = Self.prompt(kind: kind, name: name, brief: brief, dir: dir)
-        try? prompt.write(to: dir.appendingPathComponent("PROMPT.md"), atomically: true, encoding: .utf8)
-        folder = dir; log = ""; running = true
+        folder = nil; log = ""; running = true
         switch agent {
         case .copy:
             NSPasteboard.general.clearContents(); NSPasteboard.general.setString(prompt, forType: .string)
             log = L.t("ee.copied"); running = false
-        case .claudeCode: runCLI(prompt, in: dir)
-        case .api: runAPI(prompt, in: dir)
+        case .claudeCode:
+            guard FileManager.default.fileExists(atPath: src + "/build_app.sh") else { log = L.t("ee.nosrc"); running = false; return }
+            folder = URL(fileURLWithPath: src); runCLI(prompt, in: folder!)
+        case .api:
+            try? FileManager.default.createDirectory(at: Self.outDir, withIntermediateDirectories: true)
+            folder = Self.outDir; runAPI(prompt, to: Self.outDir.appendingPathComponent(Self.slug(name) + ".md"))
         }
     }
 
@@ -129,7 +121,7 @@ final class ExtBuilder: ObservableObject {
         do { try p.run(); process = p } catch { log = error.localizedDescription; running = false }
     }
 
-    private func runAPI(_ prompt: String, in dir: URL) {
+    private func runAPI(_ prompt: String, to file: URL) {
         let key = KeyStore.get()
         guard !key.isEmpty else { log = L.t("ee.nokey"); running = false; return }
         task = Task {
@@ -147,7 +139,7 @@ final class ExtBuilder: ObservableObject {
                 let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
                 let text = ((json?["content"] as? [[String: Any]])?.compactMap { $0["text"] as? String }.joined(separator: "\n"))
                     ?? ((json?["error"] as? [String: Any])?["message"] as? String) ?? "?"
-                try? text.write(to: dir.appendingPathComponent("RESPONSE.md"), atomically: true, encoding: .utf8)
+                try? text.write(to: file, atomically: true, encoding: .utf8)
                 log = text; running = false
             } catch { if !Task.isCancelled { log = error.localizedDescription }; running = false }
         }
@@ -156,36 +148,49 @@ final class ExtBuilder: ObservableObject {
 
 struct ExtEditorPage: View {
     @StateObject private var builder = ExtBuilder()
-    @AppStorage("ee.kind") private var kindRaw = ExtKind.quicklook.rawValue
+    @AppStorage("ee.scope") private var scopeRaw = FormatScope.both.rawValue
     @AppStorage("ee.agent") private var agentRaw = AgentKind.claudeCode.rawValue
-    @State private var name = ""
+    @AppStorage("ee.src") private var src = ExtBuilder.defaultSource
+    @State private var format = ""
+    @State private var exts = ""
+    @State private var sample = ""
     @State private var brief = ""
     @State private var key = KeyStore.get()
 
-    private var kind: ExtKind { ExtKind(rawValue: kindRaw) ?? .quicklook }
+    private var scope: FormatScope { FormatScope(rawValue: scopeRaw) ?? .both }
     private var agent: AgentKind { AgentKind(rawValue: agentRaw) ?? .claudeCode }
-    private var ready: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty && !brief.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    private var ready: Bool {
+        !format.trimmingCharacters(in: .whitespaces).isEmpty && !exts.trimmingCharacters(in: .whitespaces).isEmpty
+            && !brief.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private func label(_ k: String) -> some View { Text(L.t(k)).socle(Socle.T.label).foregroundStyle(Socle.C.textMuted) }
+
+    private func pick(files: Bool, set: @escaping (String) -> Void) {
+        let p = NSOpenPanel(); p.canChooseFiles = files; p.canChooseDirectories = !files; p.allowsMultipleSelection = false
+        if p.runModal() == .OK, let u = p.url { set(u.path) }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Socle.M.space4) {
             Card(title: L.t("ee.title"), subtitle: L.t("ee.sub")) {
-                Text(L.t("ee.type")).socle(Socle.T.label).foregroundStyle(Socle.C.textMuted)
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: Socle.M.space2)], alignment: .leading, spacing: Socle.M.space2) {
-                    ForEach(ExtKind.allCases) { k in
-                        Button { kindRaw = k.rawValue } label: {
-                            Text(L.t(k.labelKey)).socle(Socle.T.body).lineLimit(1)
-                                .foregroundStyle(kind == k ? Socle.C.accentText : Socle.C.text)
-                                .frame(maxWidth: .infinity).frame(height: Socle.M.sizeControl)
-                                .background(RoundedRectangle(cornerRadius: Socle.M.radiusMd).fill(kind == k ? Socle.C.surfaceSelected : Socle.C.control))
-                        }.buttonStyle(.plain)
-                    }
+                label("ee.scope")
+                SocleSegmented(options: FormatScope.allCases, selection: scope, label: { L.t($0.labelKey) }) { scopeRaw = $0.rawValue }
+                label("ee.fmt")
+                TextField(L.t("ee.fmt.ph"), text: $format).textFieldStyle(.roundedBorder)
+                label("ee.exts")
+                TextField(L.t("ee.exts.ph"), text: $exts).textFieldStyle(.roundedBorder)
+                label("ee.sample")
+                HStack(spacing: Socle.M.space2) {
+                    Text(sample.isEmpty ? L.t("ee.none") : (sample as NSString).lastPathComponent)
+                        .socle(Socle.T.body).foregroundStyle(Socle.C.text).lineLimit(1).truncationMode(.middle)
+                    Spacer(minLength: 0)
+                    Button(L.t("ee.pick")) { pick(files: true) { sample = $0 } }.buttonStyle(SocleButtonStyle(.secondary)).lineLimit(1)
                 }
-                Text(L.t("ee.name")).socle(Socle.T.label).foregroundStyle(Socle.C.textMuted)
-                TextField(L.t("ee.name.ph"), text: $name).textFieldStyle(.roundedBorder)
-                Text(L.t("ee.brief")).socle(Socle.T.label).foregroundStyle(Socle.C.textMuted)
+                label("ee.brief")
                 TextEditor(text: $brief)
                     .font(.system(size: 13)).scrollContentBackground(.hidden).padding(6)
-                    .frame(minHeight: 130)
+                    .frame(minHeight: 110)
                     .background(Socle.C.bgSunken, in: RoundedRectangle(cornerRadius: Socle.M.radiusMd))
                     .overlay(RoundedRectangle(cornerRadius: Socle.M.radiusMd).stroke(Socle.C.borderControl, lineWidth: 1))
             }
@@ -198,9 +203,18 @@ struct ExtEditorPage: View {
                 } else {
                     Hint(L.t(agent == .claudeCode ? "ee.cli.hint" : "ee.copy.hint"))
                 }
+                if agent == .claudeCode {
+                    label("ee.src")
+                    HStack(spacing: Socle.M.space2) {
+                        Text(src).socle(Socle.T.body).foregroundStyle(Socle.C.text).lineLimit(1).truncationMode(.middle)
+                        Spacer(minLength: 0)
+                        Button(L.t("ee.pick")) { pick(files: false) { src = $0 } }.buttonStyle(SocleButtonStyle(.secondary)).lineLimit(1)
+                    }
+                }
                 HStack(spacing: Socle.M.space2) {
                     Button(L.t(agent == .copy ? "ee.copybtn" : "ee.create")) {
-                        builder.start(kind: kind, name: name, brief: brief, agent: agent)
+                        let p = ExtBuilder.prompt(scope: scope, format: format, exts: exts, sample: sample, brief: brief, src: src)
+                        builder.start(prompt: p, name: format, src: src, agent: agent)
                     }
                     .buttonStyle(SocleButtonStyle(.primary, height: Socle.M.sizeControl)).lineLimit(1)
                     .disabled(!ready || builder.running)

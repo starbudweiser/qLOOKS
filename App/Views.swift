@@ -13,7 +13,7 @@ struct ContentView: View {
     enum Page: String, CaseIterable, Identifiable {
         case settings, formats, editor, trial, updates
         var id: String { rawValue }
-        var symbol: String { ["settings": "slider.horizontal.3", "formats": "square.grid.2x2", "editor": "hammer", "trial": "play.rectangle", "updates": "arrow.down.circle"][rawValue] ?? "circle" }
+        var symbol: String { ["settings": "slider.horizontal.3", "formats": "square.grid.2x2", "editor": "plus.square.on.square", "trial": "play.rectangle", "updates": "arrow.down.circle"][rawValue] ?? "circle" }
         var titleKey: String { "nav." + rawValue }
     }
     @State private var page: Page = .settings
