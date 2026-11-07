@@ -11,9 +11,9 @@ struct ContentView: View {
     @ObservedObject private var ext = Extensions.shared
 
     enum Page: String, CaseIterable, Identifiable {
-        case settings, formats, trial, updates
+        case settings, formats, editor, trial, updates
         var id: String { rawValue }
-        var symbol: String { ["settings": "slider.horizontal.3", "formats": "square.grid.2x2", "trial": "play.rectangle", "updates": "arrow.down.circle"][rawValue] ?? "circle" }
+        var symbol: String { ["settings": "slider.horizontal.3", "formats": "square.grid.2x2", "editor": "hammer", "trial": "play.rectangle", "updates": "arrow.down.circle"][rawValue] ?? "circle" }
         var titleKey: String { "nav." + rawValue }
     }
     @State private var page: Page = .settings
@@ -28,6 +28,7 @@ struct ContentView: View {
                     switch page {
                     case .settings: previewCard; extensionsCard
                     case .formats: FormatsPage()
+                    case .editor: ExtEditorPage()
                     case .trial: tryCard
                     case .updates: Card(title: L.t("upd.title")) { UpdateSection() }
                     }
