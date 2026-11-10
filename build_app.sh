@@ -11,6 +11,8 @@ DEST="$HOME/Applications/Applications Personnelles"
 SIGN="/Volumes/SKYRIM/TOOLS/MAC/_tools/sign_app.sh"
 TARGET="arm64-apple-macos15"
 SWIFTC=(swiftc -O -swift-version 5 -target "$TARGET")
+# Éditeur « Ajouter un format » : version locale seulement ; PUBLIC=1 (release.sh) l'exclut.
+[ -z "${PUBLIC:-}" ] && SWIFTC+=(-D LOCAL_EDITOR)
 
 rm -rf "$WORK"; mkdir -p "$WORK"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/PlugIns"

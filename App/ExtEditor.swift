@@ -1,4 +1,5 @@
 // qLOOKS — éditeur d'extensions : décrire une extension macOS et confier sa création à un agent IA.
+#if LOCAL_EDITOR
 import SwiftUI
 import Security
 
@@ -238,3 +239,4 @@ struct ExtEditorPage: View {
         }
     }
 }
+#endif
