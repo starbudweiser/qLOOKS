@@ -24,7 +24,12 @@ final class Updater: ObservableObject {
     private var checking = false
 
     var currentVersion: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0" }
+    #if LOCAL_EDITOR
+    /// Version locale (avec l'éditeur « Ajouter un format ») : jamais remplacée par la version publique, qui ne l'a pas.
+    var autoUpdate: Bool { false }
+    #else
     var autoUpdate: Bool { UserDefaults.standard.object(forKey: "autoUpdate") as? Bool ?? true }
+    #endif
 
     /// Au lancement puis toutes les heures : une recherche par jour ; installation automatique quand aucune lecture d'essai ne tourne.
     func tick(busy: Bool) {
@@ -61,6 +66,9 @@ final class Updater: ObservableObject {
 
     /// Télécharge la nouvelle version, vérifie sa signature, puis remplace l'appli et la relance.
     func install() async {
+        #if LOCAL_EDITOR
+        return
+        #else
         guard case .available = state, let url = assetURL else { return }
         state = .downloading
         do {
@@ -78,8 +86,8 @@ final class Updater: ObservableObject {
         } catch {
             state = .failed(error.localizedDescription)
         }
+        #endif
     }
-
 
     enum UpdateError: LocalizedError {
         case noRelease, download, badSignature, badVersion
