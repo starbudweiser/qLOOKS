@@ -8,6 +8,8 @@ qLOOKS is a macOS app that hosts two Quick Look extensions (preview and thumbnai
 qLOOKS is made by Starbudweiser & Claude Code (Anthropic). Part of the **DESKTOP MAC TOOLKIT**. MIT License, © 2026 Starbudweiser. Provided as is, without warranty. Not affiliated with Apple or Video Copilot.
 "About qLOOKS" is in the app menu.
 
+![The qLOOKS window showing the list of supported formats (video, vector images, 3D models, archives) by version.](docs/screenshot.png)
+
 ## Requirements and installation
 
 - macOS 15 or later, Apple Silicon.
