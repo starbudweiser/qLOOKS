@@ -55,6 +55,7 @@ enum About {
             label(L.t("about.authors"), bold: true),
             label(L.t("about.license")),
             label(L.t("about.disclaimer"), secondary: true),
+            label(L.t("about.collection"), secondary: true),
             label(L.t("about.credit"), secondary: true),
         ]
         let stack = NSStackView(views: views)
