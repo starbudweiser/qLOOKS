@@ -1,5 +1,5 @@
 // qLOOKS — modèles 3D : STL, OBJ, PLY, USD, Alembic, Collada, SceneKit (via SceneKit) ; 3MF, 3DS, LWO, LWS (lecteurs maison) ;
-// Cinema 4D (conversion par c4dpy si présent, sinon image d'aperçu enregistrée dans le fichier).
+// Nadeo GBX (lecteur maison, GBX.swift) ; Cinema 4D (conversion par c4dpy si présent, sinon image d'aperçu enregistrée dans le fichier).
 import AppKit
 import Foundation
 import SceneKit
@@ -40,7 +40,7 @@ struct Mesh {
 
 enum Model3D {
     static let sceneKitExtensions: Set<String> = ["stl", "obj", "ply", "usd", "usda", "usdc", "usdz", "abc", "dae", "scn"]
-    static let customExtensions: Set<String> = ["3mf", "3ds", "lwo", "lws"]
+    static let customExtensions: Set<String> = ["3mf", "3ds", "lwo", "lws", "gbx"]
     static let c4dExtensions: Set<String> = ["c4d"]
     static let previewOnlyExtensions: Set<String> = ["max"]
 
@@ -82,6 +82,10 @@ enum Model3D {
         case "lws":
             guard let (n, t) = LWS.load(url) else { return nil }
             out.root = n; out.triangles = t
+        case "gbx":
+            if let (n, t) = GBX.load(url) { out.root = n; out.triangles = t }
+            else if let img = GBX.embeddedThumbnail(url) { out.preview = img; out.note = "preview" }
+            else { return nil }
         case "c4d":
             let r = await C4D.load(url)
             out.root = r.root; out.preview = r.preview; out.triangles = r.triangles; out.note = r.note
