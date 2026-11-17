@@ -152,7 +152,7 @@ struct ContentView: View {
 
     private func choose() {
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.quickTimeMovie, .movie] + ["mkv", "webm"].compactMap { UTType(filenameExtension: $0) }
+        panel.allowedContentTypes = [.quickTimeMovie, .movie] + ["mkv", "webm", "avi", "wmv", "flv", "ogv", "mxf", "rm"].compactMap { UTType(filenameExtension: $0) }
         panel.allowsMultipleSelection = false
         if panel.runModal() == .OK, let url = panel.url { tryURL = url }
     }

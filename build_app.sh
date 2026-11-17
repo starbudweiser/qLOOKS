@@ -14,11 +14,16 @@ SWIFTC=(swiftc -O -swift-version 5 -target "$TARGET")
 # Éditeur « Ajouter un format » : version locale seulement ; PUBLIC=1 (release.sh) l'exclut.
 [ -z "${PUBLIC:-}" ] && SWIFTC+=(-D LOCAL_EDITOR)
 
+# FFmpeg réduit (LGPL, statique) : WebM/AVI/WMV/FLV/OGV… ; compilé une seule fois (ffmpeg/build_ffmpeg.sh).
+./ffmpeg/build_ffmpeg.sh
+FF="$HOME/Library/Caches/qLOOKS-ffmpeg/out"
+FFLAGS=(-import-objc-header "$SRC/ffmpeg/ffshim.h" -Xcc -I"$FF/include" -Xlinker -L"$FF/lib" -Xlinker -lavformat -Xlinker -lavcodec -Xlinker -lswscale -Xlinker -lavutil)
+
 rm -rf "$WORK"; mkdir -p "$WORK"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$APP/Contents/PlugIns"
 
 # Appli hôte
-"${SWIFTC[@]}" -parse-as-library -module-name qLOOKS -o "$APP/Contents/MacOS/qLOOKS" App/*.swift Shared/*.swift
+"${SWIFTC[@]}" -parse-as-library -module-name qLOOKS "${FFLAGS[@]}" -o "$APP/Contents/MacOS/qLOOKS" App/*.swift Shared/*.swift
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 cp assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
@@ -28,7 +33,7 @@ build_ext() {
   local ext="$APP/Contents/PlugIns/$name.appex"
   mkdir -p "$ext/Contents/MacOS"
   "${SWIFTC[@]}" -parse-as-library -application-extension -module-name "$name" -framework "$fw" \
-    -Xlinker -e -Xlinker _NSExtensionMain -o "$ext/Contents/MacOS/$name" "$@" Shared/*.swift
+    "${FFLAGS[@]}" -Xlinker -e -Xlinker _NSExtensionMain -o "$ext/Contents/MacOS/$name" "$@" Shared/*.swift
   cp "Resources/$name-Info.plist" "$ext/Contents/Info.plist"
   if [ "$name" = Preview ]; then mkdir -p "$ext/Contents/Resources" && cp -R Resources/web "$ext/Contents/Resources/web"; fi
   SIGN_ENTITLEMENTS="$PWD/Resources/Extension.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$ext"

@@ -28,3 +28,7 @@ qLOOKS is made by Starbudweiser & Claude Code (Anthropic). Part of the **DESKTOP
 ```
 ./build_app.sh      # builds in ~/Library/Caches/qLOOKS-build, signs, installs in ~/Applications/Applications Personnelles, registers the extensions
 ```
+
+## Third-party software
+
+qLOOKS statically links a reduced build of [FFmpeg](https://ffmpeg.org) 8.0 (LGPL v2.1+, no GPL or non-free components) to decode video formats macOS cannot read. See [ffmpeg/README.md](ffmpeg/README.md) for the exact configuration and source.

@@ -32,7 +32,7 @@ struct FormatEntry: Identifiable {
 
 enum Formats {
     /// Versions de qLOOKS, de la plus ancienne à la plus récente.
-    static let versions = ["1.0.0", "1.1.0"]
+    static let versions = ["1.0.0", "1.1.0", "1.2.0"]
 
     static let all: [FormatEntry] = [
         // 1.0.0
@@ -64,6 +64,15 @@ enum Formats {
         FormatEntry(name: "Code source", exts: ["swift", "py", "js", "ts", "c", "cpp", "h", "m", "java", "go", "rs", "rb", "php", "sh", "json", "yml", "xml", "sql", "css"], category: .dev, since: "1.1.0", preview: true, thumbnail: false, noteKey: "fm.note.code"),
         FormatEntry(name: "Applications et modules", exts: ["app", "appex", "framework", "bundle", "plugin", "dylib"], category: .dev, since: "1.1.0", preview: true, thumbnail: false, noteKey: "fm.note.apps"),
         FormatEntry(name: "GPX", exts: ["gpx"], category: .geo, since: "1.1.0", preview: true, thumbnail: false),
+        // 1.2.0
+        FormatEntry(name: "WebM", exts: ["webm"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
+        FormatEntry(name: "AVI", exts: ["avi"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
+        FormatEntry(name: "Windows Media", exts: ["wmv", "asf"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
+        FormatEntry(name: "Flash Video", exts: ["flv", "f4v"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
+        FormatEntry(name: "Ogg Video", exts: ["ogv", "ogm"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
+        FormatEntry(name: "RealMedia", exts: ["rm", "rmvb"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
+        FormatEntry(name: "MXF", exts: ["mxf"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
+        FormatEntry(name: "DivX", exts: ["divx"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
     ]
 
     static func supported(in version: String) -> [FormatEntry] { all.filter { $0.since.compare(version, options: .numeric) != .orderedDescending } }
