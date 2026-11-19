@@ -35,7 +35,7 @@ struct FormatEntry: Identifiable {
 
 enum Formats {
     /// Versions de qLOOKS, de la plus ancienne à la plus récente.
-    static let versions = ["1.0.0", "1.1.0", "1.2.0", "1.3.0"]
+    static let versions = ["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0"]
 
     static let all: [FormatEntry] = [
         // 1.0.0
@@ -78,6 +78,8 @@ enum Formats {
         FormatEntry(name: "DivX", exts: ["divx"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),
         // 1.3.0
         FormatEntry(name: "Nadeo GBX", exts: ["gbx"], category: .model, since: "1.3.0", preview: true, thumbnail: true, noteKey: "fm.note.gbx"),
+        // 1.4.0
+        FormatEntry(name: "ePUB", exts: ["epub"], category: .document, since: "1.4.0", preview: true, thumbnail: true, noteKey: "fm.note.epub", nameKey: "fm.name.epub"),
     ]
 
     static func supported(in version: String) -> [FormatEntry] { all.filter { $0.since.compare(version, options: .numeric) != .orderedDescending } }

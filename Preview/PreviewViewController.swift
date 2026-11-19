@@ -36,6 +36,22 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
             }
             return
         }
+        if EPUB.handles(url) {
+            Task.detached {
+                let page = EPUB.html(for: url)
+                await MainActor.run {
+                    guard let page else { handler(FrameError.unreadable); return }
+                    let web = WKWebView(frame: self.view.bounds, configuration: WKWebViewConfiguration())
+                    let nav = WebNav(done: { handler(nil) })
+                    web.navigationDelegate = nav
+                    self.webNav = nav
+                    self.embed(web)
+                    self.preferredContentSize = CGSize(width: 860, height: 720)
+                    web.loadHTMLString(page, baseURL: nil)
+                }
+            }
+            return
+        }
         if url.pathExtension.lowercased() == "gpx" {
             Task {
                 guard let page = await GPX.html(for: url) else { handler(FrameError.unreadable); return }
