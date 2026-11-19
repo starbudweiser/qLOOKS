@@ -3,7 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key><string>en</string>
-	<key>CFBundleDisplayName</key><string>qLOOKS PNG et Animation</string>
+	<key>CFBundleDisplayName</key><string>qLOOKS PNG and Animation</string>
+	<key>CFBundleLocalizations</key><array><string>fr</string><string>en</string><string>es</string><string>it</string></array>
 	<key>CFBundleExecutable</key><string>Decoder</string>
 	<key>CFBundleIdentifier</key><string>fr.stephan.alphalook.decoder</string>
 	<key>CFBundleInfoDictionaryVersion</key><string>6.0</string>

@@ -233,9 +233,9 @@ enum AppInfo {
         }
         if let n = sig.notarized { sigHTML += " " + (n ? badge(L.t("ap.notarized"), "ok") : badge(L.t("ap.notnotarized"), "warn")) }
         if sig.status != "unsigned" {
-            sigHTML += " " + badge("Hardened Runtime: " + L.t(sig.runtime ? "ap.yes" : "ap.no"), sig.runtime ? "ok" : "n")
+            sigHTML += " " + badge(L.t("ap.hardened") + " " + L.t(sig.runtime ? "ap.yes" : "ap.no"), sig.runtime ? "ok" : "n")
             let sandboxed = (sig.entitlements["com.apple.security.app-sandbox"] as? Bool) == true
-            sigHTML += " " + badge("App Sandbox: " + L.t(sandboxed ? "ap.yes" : "ap.no"), sandboxed ? "ok" : "n")
+            sigHTML += " " + badge(L.t("ap.sandbox") + " " + L.t(sandboxed ? "ap.yes" : "ap.no"), sandboxed ? "ok" : "n")
         }
         rows += row(L.t("ap.signature"), sigHTML)
         if let first = sig.authority.first { rows += row(L.t("ap.developer"), esc(first)) }

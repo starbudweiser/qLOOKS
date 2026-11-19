@@ -48,6 +48,8 @@ if [ -f Resources/Decoder.provisionprofile ]; then
   "${SWIFTC[@]}" -parse-as-library -application-extension -module-name Decoder -framework MediaExtension -framework ExtensionFoundation \
     -Xlinker -e -Xlinker _EXExtensionMain -o "$DEC/Contents/MacOS/Decoder" Decoder/Decoder.swift Shared/QTRLE.swift
   cp Resources/Decoder-Info.plist "$DEC/Contents/Info.plist"
+  # Nom de l'extension (Réglages Système > Extensions) dans les 4 langues
+  for l in fr en es it; do mkdir -p "$DEC/Contents/Resources/$l.lproj"; cp "Resources/DecoderStrings/$l.lproj/InfoPlist.strings" "$DEC/Contents/Resources/$l.lproj/InfoPlist.strings"; done
   cp Resources/Decoder.provisionprofile "$DEC/Contents/embedded.provisionprofile"
   SIGN_ENTITLEMENTS="$PWD/Resources/Decoder.entitlements" SIGN_NO_DEEP=1 "$SIGN" "$DEC"
 fi

@@ -27,7 +27,10 @@ struct FormatEntry: Identifiable {
     let preview: Bool
     let thumbnail: Bool
     var noteKey: String?
+    /// Clé du nom affiché quand il doit être traduit (`name` reste l'identifiant).
+    var nameKey: String?
     var id: String { name }
+    var title: String { nameKey.map { L.t($0) } ?? name }
 }
 
 enum Formats {
@@ -59,10 +62,10 @@ enum Formats {
         FormatEntry(name: "RAR", exts: ["rar"], category: .archive, since: "1.1.0", preview: true, thumbnail: false),
         FormatEntry(name: "7-Zip", exts: ["7z"], category: .archive, since: "1.1.0", preview: true, thumbnail: false),
         FormatEntry(name: "DMG", exts: ["dmg"], category: .archive, since: "1.1.0", preview: true, thumbnail: false, noteKey: "fm.note.dmg"),
-        FormatEntry(name: "Dossiers", exts: [], category: .archive, since: "1.1.0", preview: true, thumbnail: false),
+        FormatEntry(name: "Dossiers", exts: [], category: .archive, since: "1.1.0", preview: true, thumbnail: false, nameKey: "fm.name.folders"),
         FormatEntry(name: "Markdown", exts: ["md", "markdown", "qmd", "rmd"], category: .document, since: "1.1.0", preview: true, thumbnail: false),
-        FormatEntry(name: "Code source", exts: ["swift", "py", "js", "ts", "c", "cpp", "h", "m", "java", "go", "rs", "rb", "php", "sh", "json", "yml", "xml", "sql", "css"], category: .dev, since: "1.1.0", preview: true, thumbnail: false, noteKey: "fm.note.code"),
-        FormatEntry(name: "Applications et modules", exts: ["app", "appex", "framework", "bundle", "plugin", "dylib"], category: .dev, since: "1.1.0", preview: true, thumbnail: false, noteKey: "fm.note.apps"),
+        FormatEntry(name: "Code source", exts: ["swift", "py", "js", "ts", "c", "cpp", "h", "m", "java", "go", "rs", "rb", "php", "sh", "json", "yml", "xml", "sql", "css"], category: .dev, since: "1.1.0", preview: true, thumbnail: false, noteKey: "fm.note.code", nameKey: "fm.name.code"),
+        FormatEntry(name: "Applications et modules", exts: ["app", "appex", "framework", "bundle", "plugin", "dylib"], category: .dev, since: "1.1.0", preview: true, thumbnail: false, noteKey: "fm.note.apps", nameKey: "fm.name.apps"),
         FormatEntry(name: "GPX", exts: ["gpx"], category: .geo, since: "1.1.0", preview: true, thumbnail: false),
         // 1.2.0
         FormatEntry(name: "WebM", exts: ["webm"], category: .video, since: "1.2.0", preview: true, thumbnail: true, noteKey: "fm.note.ff"),

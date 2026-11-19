@@ -109,16 +109,16 @@ enum C4D {
         let err: Error? = await withCheckedContinuation { cont in
             task.execute(withArguments: [url.path, out.path]) { e in cont.resume(returning: e) }
         }
-        if let err { return (nil, "script : \(err.localizedDescription)") }
+        if let err { return (nil, "script: \(err.localizedDescription)") }
         let obj = out.appendingPathComponent("model.obj")
-        guard FileManager.default.fileExists(atPath: obj.path) else { return (nil, "OBJ absent (conversion échouée)") }
-        guard let scene = try? SCNScene(url: obj, options: [.checkConsistency: false]) else { return (nil, "OBJ illisible") }
+        guard FileManager.default.fileExists(atPath: obj.path) else { return (nil, "OBJ missing (conversion failed)") }
+        guard let scene = try? SCNScene(url: obj, options: [.checkConsistency: false]) else { return (nil, "OBJ unreadable") }
         var n = 0
         scene.rootNode.enumerateHierarchy { node, _ in
             for el in node.geometry?.elements ?? [] { n += el.primitiveCount }
             for m in node.geometry?.materials ?? [] where m.diffuse.contents == nil { m.diffuse.contents = NSColor(white: 0.78, alpha: 1) }
         }
-        return n > 0 ? ((scene.rootNode, n), "") : (nil, "OBJ vide")
+        return n > 0 ? ((scene.rootNode, n), "") : (nil, "OBJ empty")
     }
 
     /// Image d'aperçu enregistrée dans le fichier (JPEG près du début).

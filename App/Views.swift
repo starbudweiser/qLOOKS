@@ -313,7 +313,7 @@ struct FormatsPage: View {
     private var entries: [FormatEntry] {
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
         return Formats.supported(in: version).filter {
-            q.isEmpty || $0.name.lowercased().contains(q) || $0.exts.contains { $0.contains(q.hasPrefix(".") ? String(q.dropFirst()) : q) }
+            q.isEmpty || $0.name.lowercased().contains(q) || $0.title.lowercased().contains(q) || $0.exts.contains { $0.contains(q.hasPrefix(".") ? String(q.dropFirst()) : q) }
         }
     }
 
@@ -352,7 +352,7 @@ struct FormatRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: Socle.M.space2) {
-                Text(entry.name).socle(Socle.T.body).foregroundStyle(Socle.C.text)
+                Text(entry.title).socle(Socle.T.body).foregroundStyle(Socle.C.text)
                 if Formats.isNew(entry, in: version), version != Formats.versions.first { SocleChip(text: L.t("fm.new")) }
                 Spacer(minLength: Socle.M.space2)
                 if entry.preview { SocleChip(text: L.t("fm.preview")) }
