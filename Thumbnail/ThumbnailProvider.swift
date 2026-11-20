@@ -1,4 +1,5 @@
 // qLOOKS — extension de vignettes QuickLook pour les .MOV : image la plus « remplie » de la vidéo, sur le fond choisi.
+import AppKit
 import CoreGraphics
 import QuickLookThumbnailing
 
@@ -6,6 +7,22 @@ import QuickLookThumbnailing
 final class ThumbnailProvider: QLThumbnailProvider {
     override func provideThumbnail(for request: QLFileThumbnailRequest, _ handler: @escaping (QLThumbnailReply?, Error?) -> Void) {
         let url = request.fileURL, maxSize = request.maximumSize
+        if FontFile.handles(url) {
+            guard let face = FontFile.thumbnailFace(url) else { handler(nil, FrameError.unreadable); return }
+            let side = min(maxSize.width, maxSize.height)
+            let size = CGSize(width: side, height: side)
+            handler(QLThumbnailReply(contextSize: size) { ctx in
+                // Le contexte est en pixels : on applique l'échelle si le système ne l'a pas déjà fait.
+                let k = CGFloat(ctx.width) / size.width / max(ctx.ctm.a, 0.0001)
+                if abs(k - 1) > 0.01 { ctx.scaleBy(x: k, y: k) }
+                let g = NSGraphicsContext(cgContext: ctx, flipped: false)
+                NSGraphicsContext.saveGraphicsState(); NSGraphicsContext.current = g
+                FontFile.drawThumbnail(face, in: CGRect(origin: .zero, size: size))
+                NSGraphicsContext.restoreGraphicsState()
+                return true
+            }, nil)
+            return
+        }
         if Model3D.handles(url) {
             Task {
                 guard let loaded = await Model3D.load(url) else { handler(nil, FrameError.unreadable); return }

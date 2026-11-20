@@ -21,6 +21,20 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
     }
 
     func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
+        if FontFile.handles(url) {
+            let faces = FontFile.faces(url)
+            guard !faces.isEmpty else { handler(FrameError.unreadable); return }
+            let sheet = FontSheetView(faces: faces, fileName: url.lastPathComponent)
+            let scroll = NSScrollView()
+            scroll.hasVerticalScroller = true
+            scroll.drawsBackground = true
+            scroll.backgroundColor = FontFile.paper
+            scroll.documentView = sheet
+            embed(scroll)
+            preferredContentSize = CGSize(width: 760, height: 760)
+            handler(nil)
+            return
+        }
         if Model3D.handles(url) {
             Task { @MainActor in
                 guard let loaded = await Model3D.load(url) else { handler(FrameError.unreadable); return }

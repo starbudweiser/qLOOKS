@@ -3,7 +3,7 @@
 import Foundation
 
 enum FormatCategory: String, CaseIterable, Identifiable {
-    case video, image, model, archive, document, dev, geo
+    case video, image, model, archive, document, font, dev, geo
     var id: String { rawValue }
     var titleKey: String { "fm.cat." + rawValue }
     var symbol: String {
@@ -13,6 +13,7 @@ enum FormatCategory: String, CaseIterable, Identifiable {
         case .model: return "cube"
         case .archive: return "archivebox"
         case .document: return "doc.text"
+        case .font: return "textformat"
         case .dev: return "chevron.left.forwardslash.chevron.right"
         case .geo: return "map"
         }
@@ -35,7 +36,7 @@ struct FormatEntry: Identifiable {
 
 enum Formats {
     /// Versions de qLOOKS, de la plus ancienne à la plus récente.
-    static let versions = ["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0"]
+    static let versions = ["1.0.0", "1.1.0", "1.2.0", "1.3.0", "1.4.0", "1.5.0"]
 
     static let all: [FormatEntry] = [
         // 1.0.0
@@ -80,6 +81,8 @@ enum Formats {
         FormatEntry(name: "Nadeo GBX", exts: ["gbx"], category: .model, since: "1.3.0", preview: true, thumbnail: true, noteKey: "fm.note.gbx"),
         // 1.4.0
         FormatEntry(name: "ePUB", exts: ["epub"], category: .document, since: "1.4.0", preview: true, thumbnail: true, noteKey: "fm.note.epub", nameKey: "fm.name.epub"),
+        // 1.5.0
+        FormatEntry(name: "TrueType / OpenType", exts: ["ttf", "otf", "ttc", "otc", "dfont"], category: .font, since: "1.5.0", preview: true, thumbnail: true, noteKey: "fm.note.font", nameKey: "fm.name.font"),
     ]
 
     static func supported(in version: String) -> [FormatEntry] { all.filter { $0.since.compare(version, options: .numeric) != .orderedDescending } }
